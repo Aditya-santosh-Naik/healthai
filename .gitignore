@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# Database and generated artefacts
+*.db
+*.db-journal
+backend/uploads/
+backend/reports_out/
+data/index.pkl
+
+# Node
+node_modules/
+dist/
+*.local
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

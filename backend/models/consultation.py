@@ -1,0 +1,180 @@
+from datetime import datetime
+
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    func,
+)
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from database import Base
+from models.enums import ConsultationStatus, SafetySeverity
+
+
+class Consultation(Base):
+    __tablename__ = "consultations"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    profile_id: Mapped[int] = mapped_column(
+        ForeignKey("patient_profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    started_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime)
+    status: Mapped[str] = mapped_column(String(16), default=ConsultationStatus.IN_PROGRESS)
+    # Ordinal band only. Never a number.
+    outcome_band: Mapped[str | None] = mapped_column(String(32))
+    escalation_reason: Mapped[str | None] = mapped_column(Text)
+    llm_raw_output: Mapped[str | None] = mapped_column(Text)
+    questions_asked: Mapped[int] = mapped_column(Integer, default=0)
+
+    profile: Mapped["PatientProfile"] = relationship(back_populates="consultations")  # noqa: F821
+    messages: Mapped[list["Message"]] = relationship(
+        back_populates="consultation", cascade="all, delete-orphan"
+    )
+    symptoms: Mapped[list["ConsultationSymptom"]] = relationship(
+        back_populates="consultation", cascade="all, delete-orphan"
+    )
+    evidence: Mapped[list["CandidateEvidence"]] = relationship(
+        back_populates="consultation", cascade="all, delete-orphan"
+    )
+    safety_results: Mapped[list["MedicationSafetyResult"]] = relationship(
+        back_populates="consultation", cascade="all, delete-orphan"
+    )
+    retrievals: Mapped[list["RagRetrieval"]] = relationship(
+        back_populates="consultation", cascade="all, delete-orphan"
+    )
+    recommendations: Mapped[list["Recommendation"]] = relationship(
+        back_populates="consultation", cascade="all, delete-orphan"
+    )
+
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    consultation_id: Mapped[int] = mapped_column(
+        ForeignKey("consultations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    role: Mapped[str] = mapped_column(String(16), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    consultation: Mapped["Consultation"] = relationship(back_populates="messages")
+
+
+class ConsultationSymptom(Base):
+    """A symptom observation.
+
+    present=False is a stated negative and counts as evidence. That is not the
+    same as a symptom simply being absent from the transcript.
+    """
+
+    __tablename__ = "consultation_symptoms"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    consultation_id: Mapped[int] = mapped_column(
+        ForeignKey("consultations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    symptom_code: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    present: Mapped[bool] = mapped_column(Boolean, default=True)
+    duration_hours: Mapped[float | None] = mapped_column(Float)
+    severity: Mapped[int | None] = mapped_column(Integer)
+    onset: Mapped[str | None] = mapped_column(String(64))
+    source: Mapped[str] = mapped_column(String(16), default="stated")
+
+    consultation: Mapped["Consultation"] = relationship(back_populates="symptoms")
+
+
+class CandidateEvidence(Base):
+    """Full evidence breakdown per candidate condition.
+
+    internal_score is persisted for audit and testing. It is never rendered.
+    """
+
+    __tablename__ = "candidate_evidence"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    consultation_id: Mapped[int] = mapped_column(
+        ForeignKey("consultations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    condition_code: Mapped[str] = mapped_column(String(64), nullable=False)
+    band: Mapped[str] = mapped_column(String(32), nullable=False)
+    supporting_json: Mapped[str] = mapped_column(Text, default="[]")
+    missing_json: Mapped[str] = mapped_column(Text, default="[]")
+    contradictory_json: Mapped[str] = mapped_column(Text, default="[]")
+    hallmark_present: Mapped[bool] = mapped_column(Boolean, default=False)
+    context_factors_json: Mapped[str] = mapped_column(Text, default="[]")
+    internal_score: Mapped[float] = mapped_column(Float, default=0.0)
+
+    consultation: Mapped["Consultation"] = relationship(back_populates="evidence")
+
+
+class MedicationSafetyResult(Base):
+    __tablename__ = "medication_safety_results"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    consultation_id: Mapped[int] = mapped_column(
+        ForeignKey("consultations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    subject_drug: Mapped[str] = mapped_column(String(120), nullable=False)
+    related_drug_or_condition: Mapped[str | None] = mapped_column(String(120))
+    severity: Mapped[str] = mapped_column(String(16), default=SafetySeverity.NONE)
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    source_url: Mapped[str | None] = mapped_column(String(512))
+
+    consultation: Mapped["Consultation"] = relationship(back_populates="safety_results")
+
+
+class RagRetrieval(Base):
+    __tablename__ = "rag_retrievals"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    consultation_id: Mapped[int] = mapped_column(
+        ForeignKey("consultations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    chunk_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    source_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    source_url: Mapped[str | None] = mapped_column(String(512))
+    score: Mapped[float] = mapped_column(Float, default=0.0)
+
+    consultation: Mapped["Consultation"] = relationship(back_populates="retrievals")
+
+
+class Recommendation(Base):
+    __tablename__ = "recommendations"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    consultation_id: Mapped[int] = mapped_column(
+        ForeignKey("consultations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    category: Mapped[str] = mapped_column(String(32), nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+
+    consultation: Mapped["Consultation"] = relationship(back_populates="recommendations")
+
+
+class Feedback(Base):
+    __tablename__ = "feedback"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    consultation_id: Mapped[int] = mapped_column(
+        ForeignKey("consultations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    helpful: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class PdfReport(Base):
+    __tablename__ = "pdf_reports"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    consultation_id: Mapped[int] = mapped_column(
+        ForeignKey("consultations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    filepath: Mapped[str] = mapped_column(String(512), nullable=False)
+    generated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
