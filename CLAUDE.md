@@ -363,40 +363,48 @@ The **"What to tell your doctor"** block is a short copyable clinical summary �
 
 ```
 [x] Day 1  Verify Ollama FIRST. Scaffold, full DB schema, JWT auth, profile CRUD,
-           onboarding wizard, seed script with one demo patient.
-[ ] Day 2  symptoms.yaml, 14 condition YAMLs, red_flags.yaml, drugs.yaml,
+           onboarding wizard, seed script with demo patients.
+[x] Day 2  symptoms.yaml, 14 condition YAMLs, red_flags.yaml, drugs.yaml,
            interactions.yaml, diet_templates.yaml. All with source URLs.
-[ ] Day 3  Scope guard, red-flag check, symptom extraction + negation,
+[x] Day 3  Scope guard, red-flag check, symptom extraction + negation,
            evidence engine, sufficiency check.
-[ ] Day 4  Follow-up engine, medication safety incl. allergy classes + ADR check.
-[ ] Day 5  RAG corpus + index + retriever, Ollama client, prompts, fallback,
-           diet/lifestyle generation.
-[ ] Day 6  Result page, consultation history, PDF export, minimal document upload
-           + confirmation flow, UI polish.
-[ ] Day 7  10 acceptance tests, 3 seeded demo patients, demo rehearsal,
-           README, architecture.md, limitations section.
+[x] Day 4  Follow-up engine, medication safety incl. allergy classes + ADR check.
+[ ] Day 5  RAG corpus + index + retriever, Ollama client, prompts, fallback.
+           (diet/lifestyle generation is DONE, built early on Day 4)
+[ ] Day 6  Consultation API + chat UI, result page, history, PDF export,
+           document upload + confirmation flow, UI polish.
+[ ] Day 7  10 acceptance tests as automated tests, demo rehearsal, final docs.
 ```
 
-**CURRENT STATE:** Day 1 complete. Backend and frontend both run and talk to each other.
+**CURRENT STATE:** Days 1-4 complete. The whole deterministic reasoning core
+works end to end and is verified. Not yet wired to an HTTP endpoint or the UI.
 
 Verified on the target machine, not estimated:
-- Ollama 0.32.14, model `qwen2.5:3b` (Ollama's `:3b` tag is the instruct build)
-- **100% GPU**, 2151 MiB / 6141 MiB VRAM — ~4 GB headroom for browser + IDE
-- **~57 tokens/sec warm**, ~46 s cold load. `ollama_keep_alive=30m` set in `config.py`
-  so a demo never pays the cold load.
+- Ollama 0.32.14, model `qwen2.5:3b`, **100% GPU**, 2151/6141 MiB VRAM
+- **~57 tokens/sec warm**, ~46 s cold load. `ollama_keep_alive=30m` in config.py
 
-Built and verified end-to-end:
-- All 17 tables from §6 created; FK cascade enabled via SQLite `foreign_keys` pragma
-- JWT auth (register / login / me / delete account), bcrypt, 72-byte cap enforced
-- Profile CRUD with `provenance` on every fact; under-18 rejected at the schema boundary
-- Onboarding wizard, 4 steps, shadcn/ui as shipped
-- 3 demo patients seeded (idempotent), chosen so identical symptoms give different output
-- Frontend typechecks and builds clean; login → dashboard → profile verified in a browser
+Knowledge base (all source-cited, all in data/, none in Python):
+- 101 symptom codes / 720 aliases incl. Indian-English, plus an implication
+  graph so "high fever" entails "fever"
+- 14 conditions, 15 red-flag rules, 55 drugs with brand->generic, 52
+  interaction rules, class-based allergy cross-reactivity, 14 diet templates
+- a cross-reference validator runs over the whole set; it caught 4 dangling
+  symptom codes on first run
 
-**LAST SESSION:** Day 1 — scaffold, auth, profile, schema, onboarding, seed.
-**NEXT ACTION:** Day 2 — knowledge encoding. `symptoms.yaml` first, then the 14
-condition YAMLs, then red_flags/drugs/interactions/diet_templates. Every rule needs a
-`source_url`.
+Natural-language extraction, measured against 96 labelled real-phrasing cases
+(`data/eval/nl_symptom_cases.yaml`, run `python -m tools.eval_extraction`):
+- baseline 74.0% of cases -> **100% cases, 100% symptom recall, 100% negation,
+  100% duration, 0 forbidden false positives**
+
+Engine-level acceptance tests passing: 1, 2, 3, 4, 5, 7, 8, 9, 10.
+Test 6 (PDF upload) needs Day 6.
+
+**LAST SESSION:** Days 2-4 -- knowledge encoding, all deterministic engines,
+extraction tuning loop.
+**NEXT ACTION:** Day 5 -- RAG corpus + index + retriever, then the Ollama
+client with its template fallback. After that Day 6 wires
+`api/consultation.py` and the chat/result UI, which is what turns the working
+engine into a usable demo.
 
 Day 2 is unglamorous data entry and everything downstream depends on it. Do not let it be skipped toward more interesting work. If time runs short, drop from 14 conditions to 10 — **never reduce the depth of the evidence model**.
 
