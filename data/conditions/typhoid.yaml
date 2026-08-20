@@ -1,0 +1,18 @@
+code: typhoid
+display_name: Typhoid Fever
+sources:
+  - name: WHO - Typhoid
+    url: https://www.who.int/news-room/fact-sheets/detail/typhoid
+  - name: MedlinePlus - Typhoid Fever
+    url: https://medlineplus.gov/typhoidfever.html
+hallmark_symptoms: [fever, abdominal_pain, headache, weakness]
+supporting_symptoms: [loss_of_appetite, constipation, diarrhoea, fatigue, rash, nausea, malaise, abdominal_tenderness]
+expected_symptoms: [fever]
+contradictory_symptoms: [runny_nose, sneezing, facial_pressure, productive_cough]
+typical_duration_hours: {min: 168, max: 672}
+context_modifiers:
+  - factor: outside_food
+    effect: strengthen
+  - factor: recent_travel
+    effect: strengthen
+red_flags: [severe_abdominal_pain, black_stools, confusion, bloody_stools]

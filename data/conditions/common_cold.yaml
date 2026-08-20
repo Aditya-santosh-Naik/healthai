@@ -1,0 +1,14 @@
+code: common_cold
+display_name: Common Cold
+sources:
+  - name: MedlinePlus - Common Cold
+    url: https://medlineplus.gov/commoncold.html
+hallmark_symptoms: [runny_nose, sneezing, blocked_nose]
+supporting_symptoms: [sore_throat, cough, dry_cough, low_grade_fever, malaise, hoarseness, postnasal_drip]
+expected_symptoms: [runny_nose]
+contradictory_symptoms: [high_fever, severe_body_ache, shortness_of_breath, retro_orbital_pain, watery_diarrhoea]
+typical_duration_hours: {min: 24, max: 240}
+context_modifiers:
+  - factor: sick_contact
+    effect: strengthen
+red_flags: [shortness_of_breath, chest_pain]

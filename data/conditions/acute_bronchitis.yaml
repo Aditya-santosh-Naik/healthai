@@ -1,0 +1,14 @@
+code: acute_bronchitis
+display_name: Acute Bronchitis
+sources:
+  - name: MedlinePlus - Acute Bronchitis
+    url: https://medlineplus.gov/acutebronchitis.html
+hallmark_symptoms: [productive_cough, chest_tightness, cough_worse_at_night]
+supporting_symptoms: [cough, wheezing, low_grade_fever, fatigue, sore_throat, sputum_discoloured, hoarseness]
+expected_symptoms: [cough]
+contradictory_symptoms: [watery_diarrhoea, retro_orbital_pain, facial_pressure]
+typical_duration_hours: {min: 72, max: 504}
+context_modifiers:
+  - factor: smoker
+    effect: strengthen
+red_flags: [blood_in_sputum, shortness_of_breath, high_fever, chest_pain]

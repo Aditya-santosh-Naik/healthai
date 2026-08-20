@@ -1,0 +1,18 @@
+code: dengue
+display_name: Dengue Fever
+sources:
+  - name: WHO - Dengue and severe dengue
+    url: https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue
+  - name: MedlinePlus - Dengue
+    url: https://medlineplus.gov/dengue.html
+hallmark_symptoms: [high_fever, severe_headache, retro_orbital_pain, severe_body_ache]
+supporting_symptoms: [nausea, vomiting, rash, joint_pain, fatigue, muscle_pain, weakness, loss_of_appetite]
+expected_symptoms: [fever]
+contradictory_symptoms: [productive_cough, sore_throat, runny_nose, facial_pressure]
+typical_duration_hours: {min: 24, max: 168}
+context_modifiers:
+  - factor: mosquito_exposure
+    effect: strengthen
+  - factor: monsoon_season
+    effect: strengthen
+red_flags: [severe_abdominal_pain, persistent_vomiting, bleeding_gums, nosebleed, black_stools, lethargy_restlessness]

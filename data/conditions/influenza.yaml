@@ -1,0 +1,16 @@
+code: influenza
+display_name: Influenza (Flu)
+sources:
+  - name: MedlinePlus - Flu
+    url: https://medlineplus.gov/flu.html
+  - name: CDC - Flu Symptoms
+    url: https://www.cdc.gov/flu/signs-symptoms/
+hallmark_symptoms: [fever, body_ache, chills, fatigue]
+supporting_symptoms: [dry_cough, headache, sore_throat, weakness, malaise, runny_nose, muscle_pain]
+expected_symptoms: [fever]
+contradictory_symptoms: [watery_diarrhoea, heartburn, facial_pressure]
+typical_duration_hours: {min: 24, max: 168}
+context_modifiers:
+  - factor: sick_contact
+    effect: strengthen
+red_flags: [shortness_of_breath, chest_pain, confusion, blue_lips]

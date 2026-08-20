@@ -1,0 +1,460 @@
+# Symptom vocabulary.
+#
+# Extraction is rules, not LLM. Aliases carry the weight: users type "loose
+# motions", not "diarrhoea". Longest alias wins, so "dry cough" beats "cough".
+#
+# Hinglish appears only here, as aliases (spec section 15).
+
+symptoms:
+
+  # --- general / systemic ---------------------------------------------------
+  fever:
+    display: Fever
+    aliases: [fever, temperature, feverish, running a temperature, high temperature,
+              raised temperature, pyrexia, bukhar, febrile, hot with fever, burning up]
+  high_fever:
+    display: High fever
+    aliases: [high fever, very high fever, 103 fever, 104 fever, spiking fever,
+              temperature above 102, high grade fever, severe fever]
+  low_grade_fever:
+    display: Low-grade fever
+    aliases: [low grade fever, mild fever, slight fever, slight temperature,
+              99 fever, low fever]
+  chills:
+    display: Chills
+    aliases: [chills, shivering, shivers, feeling cold, cold shivers, rigors,
+              shaking chills, thand lag rahi]
+  fatigue:
+    display: Fatigue
+    aliases: [fatigue, tired, tiredness, exhausted, exhaustion, no energy,
+              feeling drained, worn out, thakan, very tired, extremely tired]
+  weakness:
+    display: Weakness
+    aliases: [weakness, weak, feeling weak, kamzori, no strength, feeble]
+  malaise:
+    display: Feeling generally unwell
+    aliases: [malaise, unwell, not feeling well, feeling off, feeling rough,
+              out of sorts, generally unwell, not myself,
+              not feeling good, not feeling great, not feeling right, feeling terrible, feeling awful]
+  body_ache:
+    display: Body aches
+    aliases: [body ache, body aches, body pain, body pains, aching all over,
+              aches all over, whole body pain, badan dard, sore all over, achy]
+  severe_body_ache:
+    display: Severe body aches
+    aliases: [severe body ache, severe body pain, terrible body pain,
+              unbearable body ache, breakbone pain, bone breaking pain]
+  joint_pain:
+    display: Joint pain
+    aliases: [joint pain, joints hurt, aching joints, painful joints, arthralgia,
+              knee pain, jodo me dard]
+  muscle_pain:
+    display: Muscle pain
+    aliases: [muscle pain, muscle ache, sore muscles, myalgia, aching muscles]
+  headache:
+    display: Headache
+    aliases: [headache, head ache, head pain, my head hurts, head is hurting,
+              sar dard, sir dard, pain in head]
+  severe_headache:
+    display: Severe headache
+    aliases: [severe headache, terrible headache, worst headache, splitting headache,
+              unbearable headache, intense headache, pounding headache]
+  retro_orbital_pain:
+    display: Pain behind the eyes
+    aliases: [pain behind the eyes, pain behind eyes, eye socket pain,
+              retro orbital pain, hurts behind my eyes, pain around eyes]
+  dizziness:
+    display: Dizziness
+    aliases: [dizziness, dizzy, giddiness, giddy, lightheaded, light headed,
+              head spinning, chakkar, feeling faint, vertigo]
+  sweating:
+    display: Sweating
+    aliases: [sweating, sweaty, perspiring, cold sweat, breaking out in sweat,
+              drenched in sweat, pasina]
+  night_sweats:
+    display: Night sweats
+    aliases: [night sweats, sweating at night, waking up sweating]
+  loss_of_appetite:
+    display: Loss of appetite
+    aliases: [loss of appetite, no appetite, not hungry, cant eat, dont feel like eating,
+              appetite is gone, bhookh nahi]
+  rash:
+    display: Skin rash
+    aliases: [rash, skin rash, red spots, spots on skin, red patches, hives,
+              breaking out in a rash, skin eruption]
+  itching:
+    display: Itching
+    aliases: [itching, itchy, scratching, khujli, itchy skin]
+  swollen_lymph_nodes:
+    display: Swollen glands
+    aliases: [swollen glands, swollen lymph nodes, lumps in neck, neck glands swollen,
+              tender glands]
+
+  # --- respiratory / ENT ----------------------------------------------------
+  cough:
+    display: Cough
+    aliases: [cough, coughing, khansi, cant stop coughing, been coughing]
+  dry_cough:
+    display: Dry cough
+    aliases: [dry cough, hacking cough, tickly cough, non productive cough,
+              cough without phlegm, sookhi khansi, irritating cough]
+  productive_cough:
+    display: Cough with phlegm
+    aliases: [productive cough, cough with phlegm, coughing up mucus, wet cough,
+              chesty cough, phlegm, mucus, coughing up sputum, cough with sputum,
+              bringing up phlegm, balgam]
+  sputum_discoloured:
+    display: Yellow or green phlegm
+    aliases: [yellow phlegm, green phlegm, yellow mucus, green mucus,
+              discoloured sputum, yellow sputum, green sputum]
+  blood_in_sputum:
+    display: Blood in phlegm
+    aliases: [blood in phlegm, coughing blood, coughing up blood, blood in sputum,
+              blood in mucus, haemoptysis, hemoptysis]
+  sore_throat:
+    display: Sore throat
+    aliases: [sore throat, throat pain, throat hurts, scratchy throat,
+              gala kharab, gale me dard, throat is sore, irritated throat]
+  severe_sore_throat:
+    display: Severe sore throat
+    aliases: [severe sore throat, terrible sore throat, very painful throat,
+              throat is killing me, unbearable throat pain]
+  painful_swallowing:
+    display: Painful swallowing
+    aliases: [painful swallowing, hurts to swallow, pain when swallowing,
+              cant swallow, difficulty swallowing, odynophagia, hard to swallow,
+              trouble swallowing, problem swallowing, difficulty in swallowing]
+  tonsil_exudate:
+    display: White patches on tonsils
+    aliases: [white patches on tonsils, white spots on throat, pus on tonsils,
+              white coating on tonsils, tonsil exudate]
+  swollen_tonsils:
+    display: Swollen tonsils
+    aliases: [swollen tonsils, enlarged tonsils, tonsils are swollen]
+  runny_nose:
+    display: Runny nose
+    aliases: [runny nose, running nose, nose running, cold, common cold,
+              naak beh rahi, nasal discharge, dripping nose, rhinorrhoea]
+  blocked_nose:
+    display: Blocked nose
+    aliases: [blocked nose, stuffy nose, nose blocked, congested nose,
+              nasal congestion, cant breathe through nose, bandh naak, stuffed up]
+  sneezing:
+    display: Sneezing
+    aliases: [sneezing, sneezes, cheenk, keep sneezing]
+  postnasal_drip:
+    display: Postnasal drip
+    aliases: [postnasal drip, post nasal drip, mucus dripping down throat,
+              something dripping in my throat]
+  facial_pain:
+    display: Facial pain
+    aliases: [facial pain, face pain, pain in my face, cheekbone pain]
+  facial_pressure:
+    display: Facial pressure
+    aliases: [facial pressure, pressure in face, pressure around eyes,
+              sinus pressure, heaviness in face, pressure in forehead]
+  hoarseness:
+    display: Hoarse voice
+    aliases: [hoarseness, hoarse, voice gone, lost my voice, croaky voice,
+              raspy voice, awaaz baith gayi]
+  loss_of_smell:
+    display: Loss of smell
+    aliases: [loss of smell, cant smell, no smell, lost my sense of smell, anosmia]
+  loss_of_taste:
+    display: Loss of taste
+    aliases: [loss of taste, cant taste, no taste, food has no taste,
+              lost my sense of taste, ageusia]
+  shortness_of_breath:
+    display: Shortness of breath
+    aliases: [shortness of breath, short of breath, breathless, breathlessness,
+              cant breathe, difficulty breathing, hard to breathe, out of breath,
+              saans lene me takleef, dyspnoea, gasping,
+              trouble breathing, problem breathing, struggling to breathe]
+  wheezing:
+    display: Wheezing
+    aliases: [wheezing, wheeze, whistling in chest, whistling sound when breathing]
+  chest_tightness:
+    display: Chest tightness
+    aliases: [chest tightness, tight chest, chest feels tight, heaviness in chest,
+              band around my chest]
+  rapid_breathing:
+    display: Fast breathing
+    aliases: [rapid breathing, fast breathing, breathing quickly, panting,
+              breathing fast]
+  chest_pain_breathing:
+    display: Chest pain when breathing
+    aliases: [chest pain when breathing, hurts to breathe, pain on deep breath,
+              sharp chest pain when i breathe, pleuritic pain,
+              pain when i take a deep breath, pain taking a deep breath, hurts when i breathe in, pain on breathing in, chest hurts when i breathe]
+  ear_pain:
+    display: Ear pain
+    aliases: [ear pain, earache, ear ache, ears hurt, pain in ear, kaan me dard,
+              ear is hurting]
+  hearing_problems:
+    display: Hearing problems
+    aliases: [hearing problems, hearing loss, cant hear properly, muffled hearing,
+              reduced hearing, hard of hearing, blocked ears]
+
+  # --- gastrointestinal -----------------------------------------------------
+  nausea:
+    display: Nausea
+    aliases: [nausea, nauseous, feeling sick, sick to my stomach, queasy,
+              feel like vomiting, ulti jaisa, want to throw up]
+  vomiting:
+    display: Vomiting
+    aliases: [vomiting, vomit, vomitings, throwing up, threw up, being sick,
+              puking, ulti, retching, sick everywhere]
+  persistent_vomiting:
+    display: Persistent vomiting
+    aliases: [persistent vomiting, cant stop vomiting, vomiting everything,
+              cant keep anything down, cant keep food down, repeated vomiting,
+              continuous vomiting]
+  blood_in_vomit:
+    display: Blood in vomit
+    aliases: [blood in vomit, vomiting blood, coffee ground vomit, haematemesis]
+  diarrhoea:
+    display: Diarrhoea
+    aliases: [diarrhoea, diarrhea, loose motions, loose motion, motions, loose stools,
+              runny stools, dast, upset stomach with motions, frequent stools,
+              going to the toilet a lot, loose potty]
+  watery_diarrhoea:
+    display: Watery diarrhoea
+    aliases: [watery diarrhoea, watery diarrhea, watery motions, watery stools,
+              rice water stools, very watery motions]
+  bloody_stools:
+    display: Blood in stools
+    aliases: [blood in stool, blood in stools, bloody stools, blood in motions,
+              bleeding from back passage, red stools]
+  black_stools:
+    display: Black stools
+    aliases: [black stools, black stool, tarry stools, melaena, melena,
+              dark black motions,
+              stools black and tarry, stools are black, stool is black, black and tarry, tarry, stools have gone black]
+  abdominal_pain:
+    display: Abdominal pain
+    aliases: [abdominal pain, stomach pain, stomach ache, tummy pain, belly pain,
+              pet dard, pet me dard, stomach hurts, pain in abdomen, gut pain,
+              stomach hurting, tummy hurting, belly hurting, pain in stomach, stomach is paining, stomach paining]
+  severe_abdominal_pain:
+    display: Severe abdominal pain
+    aliases: [severe abdominal pain, severe stomach pain, terrible stomach pain,
+              unbearable stomach pain, intense abdominal pain, agonising stomach pain]
+  upper_abdominal_pain:
+    display: Upper abdominal pain
+    aliases: [upper abdominal pain, upper stomach pain, pain above navel,
+              epigastric pain, pain in upper tummy, pain below ribs]
+  lower_abdominal_pain:
+    display: Lower abdominal pain
+    aliases: [lower abdominal pain, lower stomach pain, pain below navel,
+              lower tummy pain]
+  abdominal_cramps:
+    display: Abdominal cramps
+    aliases: [cramps, abdominal cramps, stomach cramps, cramping, tummy cramps,
+              griping pain, marod]
+  abdominal_tenderness:
+    display: Tender abdomen
+    aliases: [tender abdomen, stomach is tender, hurts when i press my stomach,
+              abdominal tenderness]
+  bloating:
+    display: Bloating
+    aliases: [bloating, bloated, gas, gassy, full of gas, distended stomach,
+              swollen tummy, pet phoola, flatulence, wind]
+  belching:
+    display: Burping
+    aliases: [belching, burping, burps, lots of burping, dakar]
+  heartburn:
+    display: Heartburn
+    aliases: [heartburn, burning in chest, burning sensation in chest, acidity,
+              acid, burning feeling in chest, chest burning, seene me jalan,
+              burning behind breastbone]
+  acid_regurgitation:
+    display: Acid coming up
+    aliases: [acid regurgitation, acid coming up, acid reflux, food coming back up,
+              reflux, regurgitation, khatta paani]
+  sour_taste:
+    display: Sour taste in mouth
+    aliases: [sour taste, bitter taste in mouth, sour taste in mouth, acidic taste]
+  indigestion:
+    display: Indigestion
+    aliases: [indigestion, dyspepsia, cant digest, food not digesting, badhazmi]
+  early_satiety:
+    display: Feeling full quickly
+    aliases: [feeling full quickly, full after a few bites, cant finish meals,
+              early satiety, full very fast]
+  constipation:
+    display: Constipation
+    aliases: [constipation, constipated, cant pass stool, hard stools, kabz,
+              not been to the toilet]
+
+  # --- red-flag and severe presentations ------------------------------------
+  chest_pain:
+    display: Chest pain
+    aliases: [chest pain, pain in chest, chest hurts, seene me dard,
+              pain in my chest]
+  chest_pain_radiating:
+    display: Chest pain spreading to arm, jaw or back
+    aliases: [chest pain radiating, chest pain spreading, pain going to my arm,
+              chest pain radiating to left arm, chest pain to arm, pain moving to jaw,
+              chest pain going into my back, crushing chest pain, pain radiating to left arm,
+              radiating to left arm, chest pain radiating to my left arm]
+  left_arm_pain:
+    display: Left arm pain
+    aliases: [left arm pain, pain in left arm, left arm hurts, arm pain with chest pain]
+  jaw_pain:
+    display: Jaw pain
+    aliases: [jaw pain, pain in jaw, jaw hurts with chest pain]
+  breathlessness_at_rest:
+    display: Breathless at rest
+    aliases: [breathless at rest, cant breathe even sitting, breathless doing nothing,
+              struggling to breathe at rest]
+  unable_to_speak_sentences:
+    display: Too breathless to speak in full sentences
+    aliases: [cant finish a sentence, too breathless to talk, cant speak properly,
+              cant complete sentences]
+  blue_lips:
+    display: Blue lips or face
+    aliases: [blue lips, lips turning blue, bluish face, cyanosis, blue fingertips]
+  confusion:
+    display: Confusion
+    aliases: [confusion, confused, disoriented, not making sense, muddled,
+              cant think straight, delirious]
+  lethargy_restlessness:
+    display: Extreme lethargy or restlessness
+    aliases: [lethargy, lethargic, very drowsy, unusually sleepy, cant stay awake,
+              restlessness, extremely restless, unresponsive]
+  fainting:
+    display: Fainting
+    aliases: [fainting, fainted, passed out, blackout, collapsed, syncope,
+              behosh]
+  seizures:
+    display: Seizure
+    aliases: [seizure, fit, convulsion, convulsions, shaking uncontrollably]
+  stiff_neck:
+    display: Stiff neck
+    aliases: [stiff neck, neck stiffness, cant bend my neck, neck is rigid]
+  bleeding_gums:
+    display: Bleeding gums
+    aliases: [bleeding gums, gums bleeding, blood from gums, mashuda se khoon]
+  nosebleed:
+    display: Nosebleed
+    aliases: [nosebleed, nose bleed, bleeding from nose, epistaxis, naak se khoon]
+  severe_dehydration:
+    display: Signs of severe dehydration
+    aliases: [severe dehydration, very dehydrated, sunken eyes, no tears,
+              extremely dry mouth, skin not springing back]
+  low_urine_output:
+    display: Passing very little urine
+    aliases: [not passing urine, very little urine, no urine, reduced urination,
+              havent urinated, peshab nahi,
+              hardly passing urine, barely passing urine, passing hardly any urine, urine output is low]
+  dark_urine:
+    display: Dark urine
+    aliases: [dark urine, dark coloured urine, tea coloured urine, brown urine]
+  yellow_eyes:
+    display: Yellowing of eyes or skin
+    aliases: [yellow eyes, yellowing of eyes, jaundice, yellow skin, peela,
+              eyes gone yellow, eyes turned yellow, eyes are yellow, eyes look yellow, skin turned yellow]
+  sudden_weakness_one_side:
+    display: Sudden weakness on one side
+    aliases: [weakness on one side, one side of body weak, face drooping,
+              cant move my arm, slurred speech]
+  vision_loss:
+    display: Sudden vision loss
+    aliases: [vision loss, cant see, lost my vision, sudden blurred vision,
+              double vision]
+  palpitations:
+    display: Palpitations
+    aliases: [palpitations, heart racing, heart pounding, fast heartbeat,
+              irregular heartbeat, dhadkan tez]
+  cold_hands_feet:
+    display: Cold hands and feet
+    aliases: [cold hands, cold feet, cold hands and feet, hands go cold,
+              icy fingers, poor circulation]
+  dehydration:
+    display: Dehydration
+    aliases: [dehydration, dehydrated, dry mouth, very thirsty, parched,
+              excessive thirst, feeling dried out]
+  weight_loss:
+    display: Unintentional weight loss
+    aliases: [weight loss, losing weight, lost weight, unintentional weight loss,
+              clothes are loose, wajan kam]
+
+  # --- pattern / timing qualifiers ------------------------------------------
+  symptoms_worse_lying_down:
+    display: Worse when lying down
+    aliases: [worse when lying down, worse lying flat, worse at night in bed,
+              worse when i lie down, better when sitting up]
+  symptoms_worse_after_food:
+    display: Worse after eating
+    aliases: [worse after eating, worse after food, worse after meals,
+              starts after i eat, after spicy food,
+              after eating, after meals, after every meal, after food, after having food, when i eat, post meal]
+  relief_with_antacid:
+    display: Relieved by antacids
+    aliases: [better with antacid, antacid helps, relieved by antacid,
+              gelusil helps, eno helps, digene helps]
+  cough_worse_at_night:
+    display: Cough worse at night
+    aliases: [cough worse at night, coughing more at night, night time cough,
+              worse at night, worse during the night]
+  recent_travel:
+    display: Recent travel
+    aliases: [recent travel, just travelled, came back from a trip, been travelling]
+  sick_contact:
+    display: Contact with someone unwell
+    aliases: [someone at home is sick, contact with sick person, family member ill,
+              colleague had the same, everyone at home has it,
+              everyone at home has the same, same thing going around, others at home are sick, someone else has the same]
+  outside_food:
+    display: Ate outside food
+    aliases: [ate outside, street food, restaurant food, ate out, roadside food,
+              had food from outside, hotel ka khana,
+              eating outside, eaten outside, food from outside, outside food, ate street food]
+  mosquito_exposure:
+    display: Mosquito exposure
+    aliases: [mosquito bites, lots of mosquitoes, mosquito area, machhar]
+
+# Symptom implications.
+#
+# A specific symptom entails its broader parent: someone reporting "high fever"
+# has reported a fever, and a condition expecting `fever` must be satisfied by
+# it. Also lets combination red flags fire -- "chest pain radiating to the arm"
+# must satisfy a rule that needs both chest_pain and chest_pain_radiating.
+#
+# Implications are applied only to POSITIVE findings. Denying "high fever" does
+# not deny fever.
+implications:
+  high_fever: [fever]
+  low_grade_fever: [fever]
+  severe_headache: [headache]
+  retro_orbital_pain: [headache]
+  dry_cough: [cough]
+  productive_cough: [cough]
+  cough_worse_at_night: [cough]
+  sputum_discoloured: [productive_cough, cough]
+  blood_in_sputum: [cough]
+  severe_body_ache: [body_ache]
+  muscle_pain: [body_ache]
+  severe_sore_throat: [sore_throat]
+  tonsil_exudate: [sore_throat]
+  swollen_tonsils: [sore_throat]
+  painful_swallowing: [sore_throat]
+  persistent_vomiting: [vomiting]
+  blood_in_vomit: [vomiting]
+  watery_diarrhoea: [diarrhoea]
+  bloody_stools: [diarrhoea]
+  severe_abdominal_pain: [abdominal_pain]
+  upper_abdominal_pain: [abdominal_pain]
+  lower_abdominal_pain: [abdominal_pain]
+  abdominal_cramps: [abdominal_pain]
+  abdominal_tenderness: [abdominal_pain]
+  chest_pain_radiating: [chest_pain]
+  left_arm_pain: [chest_pain]
+  breathlessness_at_rest: [shortness_of_breath]
+  unable_to_speak_sentences: [shortness_of_breath]
+  rapid_breathing: [shortness_of_breath]
+  facial_pain: [facial_pressure]
+  acid_regurgitation: [heartburn]
+  severe_dehydration: [dehydration]
+  lethargy_restlessness: [fatigue]
+  yellow_eyes: [dark_urine]

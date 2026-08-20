@@ -1,0 +1,287 @@
+# Natural-language extraction dataset.
+#
+# This is the "training set" for the extraction layer. There is no neural
+# model being fitted -- the extractor is rules -- but the loop is the same:
+# label real phrasings, measure, fix the gaps, re-measure. The score is
+# reported by tools/eval_extraction.py.
+#
+# Fields per case:
+#   text            what a person actually types
+#   present         symptom codes that MUST be extracted as present
+#   absent          symptom codes that MUST be extracted as present=False
+#   forbid          codes that must NOT appear at all (false-positive guard)
+#   duration_hours  expected parsed duration, if the text states one
+#
+# Implied parents (high_fever -> fever) are accepted automatically and do not
+# need listing. Extra positives that are not forbidden are reported as
+# "spurious" but do not fail a case.
+
+cases:
+
+  # --- plain keyword style, the baseline -----------------------------------
+  - text: "fever, cough, headache"
+    present: [fever, cough, headache]
+  - text: "fever, cough, headache, body aches, chills, dry cough, 2 days"
+    present: [fever, cough, headache, body_ache, chills, dry_cough]
+    duration_hours: 48
+  - text: "sore throat and runny nose"
+    present: [sore_throat, runny_nose]
+  - text: "vomiting and diarrhoea"
+    present: [vomiting, diarrhoea]
+
+  # --- negation -------------------------------------------------------------
+  - text: "fever, headache, cough, no ear pain, no hearing problems"
+    present: [fever, headache, cough]
+    absent: [ear_pain, hearing_problems]
+    forbid: []
+  - text: "I have a cough but no fever"
+    present: [cough]
+    absent: [fever]
+  - text: "headache without any nausea"
+    present: [headache]
+    absent: [nausea]
+  - text: "I do not have chest pain"
+    absent: [chest_pain]
+    forbid: []
+  - text: "denies vomiting, reports loose motions"
+    present: [diarrhoea]
+    absent: [vomiting]
+  - text: "sore throat, never had trouble swallowing"
+    present: [sore_throat]
+    absent: [painful_swallowing]
+  - text: "runny nose and sneezing, haven't had any fever"
+    present: [runny_nose, sneezing]
+    absent: [fever]
+  - text: "stomach pain, no blood in stool"
+    present: [abdominal_pain]
+    absent: [bloody_stools]
+  - text: "I've got a bad cough, there is no blood in the phlegm"
+    present: [cough]
+    absent: [blood_in_sputum]
+  - text: "fever and chills but not vomiting"
+    present: [fever, chills]
+    absent: [vomiting]
+  - text: "no rash, no joint pain, just fever"
+    present: [fever]
+    absent: [rash, joint_pain]
+
+  # --- pseudo-negation must NOT negate -------------------------------------
+  - text: "my cough is no better after 5 days"
+    present: [cough]
+    duration_hours: 120
+  - text: "the pain is not improving, still have fever"
+    present: [fever]
+  - text: "no relief from the heartburn"
+    present: [heartburn]
+
+  # --- conversational English ----------------------------------------------
+  - text: "I've been feeling really unwell since yesterday with a temperature"
+    present: [fever, malaise]
+    duration_hours: 24
+  - text: "Hi doctor, I have been having a bad headache for three days now"
+    present: [headache]
+    duration_hours: 72
+  - text: "I think I'm coming down with something, my throat hurts and I keep sneezing"
+    present: [sore_throat, sneezing]
+  - text: "My stomach has been hurting since this morning and I threw up twice"
+    present: [abdominal_pain, vomiting]
+    duration_hours: 8
+  - text: "Can't stop coughing, it's worse at night"
+    present: [cough, cough_worse_at_night]
+  - text: "I feel exhausted and my whole body aches"
+    present: [fatigue, body_ache]
+  - text: "been having trouble breathing when I walk up stairs"
+    present: [shortness_of_breath]
+  - text: "My nose is completely blocked and I can't smell anything"
+    present: [blocked_nose, loss_of_smell]
+  - text: "I keep burping and feel bloated after meals"
+    present: [belching, bloating, symptoms_worse_after_food]
+  - text: "woke up drenched in sweat with shivering"
+    present: [sweating, chills]
+
+  # --- Indian English / Hinglish aliases -----------------------------------
+  - text: "loose motions since yesterday"
+    present: [diarrhoea]
+    duration_hours: 24
+  - text: "I am having motions 5 times today and weakness"
+    present: [diarrhoea, weakness]
+  - text: "body pain and bukhar for 2 days"
+    present: [body_ache, fever]
+    duration_hours: 48
+  - text: "pet dard and vomitings"
+    present: [abdominal_pain, vomiting]
+  - text: "gas problem and burning in chest"
+    present: [bloating, heartburn]
+  - text: "giddiness when I stand up"
+    present: [dizziness]
+  - text: "sar dard since morning"
+    present: [headache]
+    duration_hours: 8
+  - text: "khansi and gala kharab for a week"
+    present: [cough, sore_throat]
+    duration_hours: 168
+  - text: "thand lag rahi hai with high temperature"
+    present: [chills, fever]
+  - text: "kamzori and no appetite"
+    present: [weakness, loss_of_appetite]
+
+  # --- duration parsing -----------------------------------------------------
+  - text: "cough for 3-4 days"
+    present: [cough]
+    duration_hours: 84
+  - text: "fever since last night"
+    present: [fever]
+    duration_hours: 12
+  - text: "headache for a couple of days"
+    present: [headache]
+    duration_hours: 48
+  - text: "diarrhoea for a week now"
+    present: [diarrhoea]
+    duration_hours: 168
+  - text: "acidity for the last two months"
+    present: [heartburn]
+    duration_hours: 1440
+  - text: "started vomiting a few hours ago"
+    present: [vomiting]
+    duration_hours: 3
+  - text: "sore throat for 10 days"
+    present: [sore_throat]
+    duration_hours: 240
+  - text: "this just started an hour back"
+    duration_hours: 1
+
+  # --- severity -------------------------------------------------------------
+  - text: "mild headache and slight fever"
+    present: [headache, fever]
+  - text: "unbearable stomach pain"
+    present: [severe_abdominal_pain]
+  - text: "severe body pain and very high fever"
+    present: [severe_body_ache, high_fever]
+  - text: "terrible sore throat, hurts to swallow"
+    present: [severe_sore_throat, painful_swallowing]
+
+  # --- respiratory presentations -------------------------------------------
+  - text: "dry cough, fever, lost my sense of taste"
+    present: [dry_cough, fever, loss_of_taste]
+  - text: "coughing up yellow phlegm with chest tightness"
+    present: [productive_cough, sputum_discoloured, chest_tightness]
+  - text: "wheezing and short of breath since morning"
+    present: [wheezing, shortness_of_breath]
+    duration_hours: 8
+  - text: "white patches on my tonsils and swollen glands in the neck"
+    present: [tonsil_exudate, swollen_lymph_nodes]
+  - text: "pressure around my eyes and forehead with a blocked nose"
+    present: [facial_pressure, blocked_nose]
+  - text: "hoarse voice and postnasal drip"
+    present: [hoarseness, postnasal_drip]
+  - text: "high fever with cough and pain when I take a deep breath"
+    present: [high_fever, cough, chest_pain_breathing]
+
+  # --- GI presentations -----------------------------------------------------
+  - text: "burning in chest after eating, worse when I lie down, antacid helps"
+    present: [heartburn, symptoms_worse_after_food, symptoms_worse_lying_down, relief_with_antacid]
+  - text: "upper stomach pain and I feel full after just a few bites"
+    present: [upper_abdominal_pain, early_satiety]
+  - text: "watery motions and stomach cramps after eating outside"
+    present: [watery_diarrhoea, abdominal_cramps, outside_food]
+  - text: "nausea and sour taste in my mouth"
+    present: [nausea, sour_taste]
+  - text: "constipated for four days with bloating"
+    present: [constipation, bloating]
+    duration_hours: 96
+  - text: "can't keep any food down since last night"
+    present: [persistent_vomiting]
+    duration_hours: 12
+  - text: "indigestion and belching, worse after spicy food"
+    present: [indigestion, belching, symptoms_worse_after_food]
+
+  # --- fever illnesses ------------------------------------------------------
+  - text: "high fever, severe headache and pain behind the eyes"
+    present: [high_fever, severe_headache, retro_orbital_pain]
+  - text: "fever with chills and sweating, comes and goes"
+    present: [fever, chills, sweating]
+  - text: "fever, weakness, stomach pain and no appetite for a week"
+    present: [fever, weakness, abdominal_pain, loss_of_appetite]
+    duration_hours: 168
+  - text: "rash on my body with joint pains and fever"
+    present: [rash, joint_pain, fever]
+  - text: "lots of mosquitoes at home, now I have high fever and body ache"
+    present: [mosquito_exposure, high_fever, body_ache]
+
+  # --- red flags ------------------------------------------------------------
+  - text: "chest pain radiating to my left arm and sweating"
+    present: [chest_pain_radiating, sweating, chest_pain]
+  - text: "crushing chest pain, can't breathe"
+    present: [chest_pain_radiating, shortness_of_breath]
+  - text: "vomiting blood"
+    present: [blood_in_vomit]
+  - text: "my stools have been black and tarry"
+    present: [black_stools]
+  - text: "bleeding gums during fever"
+    present: [bleeding_gums, fever]
+  - text: "feeling confused and very drowsy"
+    present: [confusion, lethargy_restlessness]
+  - text: "fever with a stiff neck"
+    present: [fever, stiff_neck]
+  - text: "coughing up blood"
+    present: [blood_in_sputum]
+  - text: "my eyes have gone yellow"
+    present: [yellow_eyes]
+  - text: "hardly passing any urine since yesterday"
+    present: [low_urine_output]
+    duration_hours: 24
+  - text: "lips turning blue and gasping for air"
+    present: [blue_lips, shortness_of_breath]
+  - text: "I fainted this morning"
+    present: [fainting]
+    duration_hours: 8
+
+  # --- context factors ------------------------------------------------------
+  - text: "ate street food yesterday, now vomiting"
+    present: [outside_food, vomiting]
+    duration_hours: 24
+  - text: "everyone at home has the same cough"
+    present: [sick_contact, cough]
+  - text: "just came back from a trip and have fever"
+    present: [recent_travel, fever]
+
+  # --- multi-symptom, messy real input -------------------------------------
+  - text: "I have been having fever since 3 days along with body pain, headache and I also feel very weak. No cough though."
+    present: [fever, body_ache, headache, weakness]
+    absent: [cough]
+    duration_hours: 72
+  - text: "doctor, since 2 days loose motions 4-5 times, vomiting twice, weakness, no fever"
+    present: [diarrhoea, vomiting, weakness]
+    absent: [fever]
+    duration_hours: 48
+  - text: "sore throat for 3 days, now fever also started, no runny nose and no cough"
+    present: [sore_throat, fever]
+    absent: [runny_nose, cough]
+    duration_hours: 72
+  - text: "acidity and burning after every meal for 2 weeks, no vomiting, no black stools"
+    present: [heartburn, symptoms_worse_after_food]
+    absent: [vomiting, black_stools]
+    duration_hours: 336
+  - text: "cold, cough and mild fever from last week, feeling tired all the time"
+    present: [runny_nose, cough, fever, fatigue]
+    duration_hours: 168
+
+  # --- vague input, must not hallucinate symptoms --------------------------
+  - text: "I feel unwell"
+    present: [malaise]
+  - text: "not feeling good today"
+    present: [malaise]
+    duration_hours: 8
+  - text: "something is wrong with me"
+    forbid: [fever, cough, headache, chest_pain, diarrhoea]
+  - text: "I need help"
+    forbid: [fever, cough, headache, chest_pain, diarrhoea]
+
+  # --- false-positive guards ------------------------------------------------
+  - text: "I had a cold last winter but I'm fine now"
+    forbid: [fever, chest_pain]
+  - text: "my father has diabetes"
+    forbid: [fever, cough, chest_pain]
+  - text: "I take Crocin for headaches sometimes"
+    present: [headache]
+    forbid: [fever, chest_pain]

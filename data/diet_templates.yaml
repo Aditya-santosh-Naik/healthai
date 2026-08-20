@@ -1,0 +1,455 @@
+# Diet and lifestyle guidance, keyed by condition.
+#
+# Every item carries tags. The generator filters against the patient's
+# diet_type, allergies and existing conditions before anything is shown:
+#   a vegetarian is never told to eat chicken soup
+#   a diabetic is never told to drink fruit juice or have honey
+#   a hypertensive is never told to drink salted lassi
+#
+# tags used for filtering:
+#   contains_meat, contains_egg, contains_dairy, contains_root  (diet_type)
+#   high_sugar        -> suppressed for diabetes
+#   high_salt         -> suppressed for hypertension
+#   high_potassium    -> suppressed for kidney disease
+
+defaults:
+  hydration:
+    - text: Sip water through the day rather than drinking a lot at once.
+      tags: []
+    - text: Oral rehydration salts (ORS) replace what you lose through fever or sweating.
+      tags: []
+  lifestyle:
+    - text: Rest properly. Pushing through an illness usually lengthens it.
+      tags: []
+    - text: Wash hands often, especially before eating.
+      tags: []
+  monitor:
+    - text: Whether your symptoms are improving, staying the same, or getting worse each day.
+      tags: []
+  warning_signs:
+    - text: Breathlessness, chest pain, confusion, or fainting - seek care immediately.
+      tags: []
+    - text: Symptoms that get worse instead of better after 3 to 4 days.
+      tags: []
+
+conditions:
+
+  common_cold:
+    source_url: https://medlineplus.gov/commoncold.html
+    prefer:
+      - text: Warm fluids like ginger tea, tulsi tea, or plain warm water with honey.
+        tags: [high_sugar]
+      - text: Light home food such as khichdi, dal chawal, or vegetable soup.
+        tags: []
+      - text: Steam inhalation two or three times a day helps a blocked nose.
+        tags: []
+      - text: Chicken soup or clear broth if you eat it.
+        tags: [contains_meat]
+    avoid:
+      - text: Cold drinks and ice cream while your throat is sore.
+        tags: []
+      - text: Smoking and smoky rooms, which irritate an already inflamed airway.
+        tags: []
+    hydration:
+      - text: Warm water, coconut water, or thin dal water through the day.
+        tags: [high_potassium]
+    lifestyle:
+      - text: Sleep with your head slightly raised if your nose is blocked.
+        tags: []
+      - text: Use a separate towel and cover coughs to avoid passing it on at home.
+        tags: []
+    monitor:
+      - text: Whether a fever appears or your cough starts producing coloured phlegm.
+        tags: []
+    warning_signs:
+      - text: Symptoms lasting beyond 10 days, or getting worse after starting to improve.
+        tags: []
+      - text: Difficulty breathing, or a fever above 38.5C that will not settle.
+        tags: []
+
+  influenza:
+    source_url: https://medlineplus.gov/flu.html
+    prefer:
+      - text: Easily digested food - khichdi, curd rice, upma, or plain toast.
+        tags: [contains_dairy]
+      - text: Warm soups and clear broths.
+        tags: []
+      - text: Small frequent meals rather than three large ones while your appetite is low.
+        tags: []
+    avoid:
+      - text: Heavy fried or very oily food while you have fever.
+        tags: []
+      - text: Alcohol, which worsens dehydration.
+        tags: []
+    hydration:
+      - text: Drink more than usual - fever loses fluid quickly. ORS, coconut water, nimbu pani.
+        tags: [high_potassium]
+    lifestyle:
+      - text: Stay home. Flu spreads easily in the first few days.
+        tags: []
+      - text: Complete rest for the first 48 to 72 hours.
+        tags: []
+    monitor:
+      - text: Your temperature, and whether breathing becomes difficult.
+        tags: []
+    warning_signs:
+      - text: Breathlessness, chest pain, or bluish lips.
+        tags: []
+      - text: Fever that improves and then returns, which can signal a second infection.
+        tags: []
+
+  covid19:
+    source_url: https://www.who.int/health-topics/coronavirus
+    prefer:
+      - text: Protein-rich food to support recovery - dal, paneer, eggs, or sprouts.
+        tags: [contains_dairy, contains_egg]
+      - text: Warm fluids and light, home-cooked meals.
+        tags: []
+      - text: Strongly flavoured food if taste is affected, so eating stays appealing.
+        tags: []
+    avoid:
+      - text: Smoking, which worsens respiratory symptoms.
+        tags: []
+      - text: Strenuous exercise until you have fully recovered.
+        tags: []
+    hydration:
+      - text: Plenty of warm water through the day.
+        tags: []
+    lifestyle:
+      - text: Isolate from household members as far as practical.
+        tags: []
+      - text: Sleep on your side or front rather than flat on your back if breathing feels tight.
+        tags: []
+    monitor:
+      - text: Your breathing, and oxygen saturation if you have a pulse oximeter at home.
+        tags: []
+    warning_signs:
+      - text: Breathlessness at rest, chest pain, confusion, or bluish lips.
+        tags: []
+
+  acute_bronchitis:
+    source_url: https://medlineplus.gov/acutebronchitis.html
+    prefer:
+      - text: Warm fluids to loosen phlegm - ginger tea, warm water, clear soup.
+        tags: []
+      - text: Honey in warm water can soothe a cough in adults.
+        tags: [high_sugar]
+      - text: Light, warm meals rather than cold food.
+        tags: []
+    avoid:
+      - text: Smoking and second-hand smoke absolutely - this is the single biggest factor.
+        tags: []
+      - text: Dusty or smoky environments while the airway is inflamed.
+        tags: []
+    hydration:
+      - text: Extra fluids keep the phlegm thin and easier to clear.
+        tags: []
+    lifestyle:
+      - text: Steam inhalation once or twice a day.
+        tags: []
+      - text: Expect the cough to linger for two to three weeks even as you improve.
+        tags: []
+    monitor:
+      - text: The colour of your phlegm and whether you become breathless.
+        tags: []
+    warning_signs:
+      - text: Coughing up blood, high fever, or breathlessness.
+        tags: []
+
+  pneumonia:
+    source_url: https://medlineplus.gov/pneumonia.html
+    prefer:
+      - text: Nourishing, easy food - dal, khichdi, soups, curd.
+        tags: [contains_dairy]
+      - text: Small frequent meals while your appetite is poor.
+        tags: []
+    avoid:
+      - text: Smoking entirely.
+        tags: []
+      - text: Lying completely flat if it makes breathing harder.
+        tags: []
+    hydration:
+      - text: Regular fluids, unless a doctor has told you to restrict them.
+        tags: []
+    lifestyle:
+      - text: This needs medical treatment. Rest and diet support it, they do not replace it.
+        tags: []
+      - text: Complete any course of treatment your doctor prescribes.
+        tags: []
+    monitor:
+      - text: Breathing rate, fever, and whether you can speak in full sentences.
+        tags: []
+    warning_signs:
+      - text: Increasing breathlessness, confusion, or bluish lips - go to hospital.
+        tags: []
+
+  strep_pharyngitis:
+    source_url: https://www.cdc.gov/group-a-strep/about/strep-throat.html
+    prefer:
+      - text: Soft, cool or lukewarm food - curd, custard, dal khichdi, mashed banana.
+        tags: [contains_dairy]
+      - text: Warm salt water gargles several times a day.
+        tags: []
+      - text: Cold liquids or ice chips, which numb a very sore throat.
+        tags: []
+    avoid:
+      - text: Spicy, sharp or very hot food while swallowing hurts.
+        tags: []
+      - text: Sharing utensils, cups, or towels at home.
+        tags: []
+    hydration:
+      - text: Keep sipping even though it hurts - dehydration makes the throat worse.
+        tags: []
+    lifestyle:
+      - text: Replace your toothbrush once you have been treated for a couple of days.
+        tags: []
+    monitor:
+      - text: Whether you can swallow fluids, and whether the fever settles.
+        tags: []
+    warning_signs:
+      - text: Unable to swallow saliva, drooling, difficulty breathing, or voice changes.
+        tags: []
+      - text: A rash, or joint pains appearing after the throat infection.
+        tags: []
+
+  sinusitis:
+    source_url: https://medlineplus.gov/sinusitis.html
+    prefer:
+      - text: Warm fluids and steam inhalation to help sinuses drain.
+        tags: []
+      - text: Saline nasal rinses.
+        tags: []
+    avoid:
+      - text: Dairy in the evening if you find it thickens your mucus.
+        tags: [contains_dairy]
+      - text: Very cold drinks and air-conditioning blowing directly on your face.
+        tags: []
+    hydration:
+      - text: Plenty of warm fluids to thin the secretions.
+        tags: []
+    lifestyle:
+      - text: Sleep with your head raised on an extra pillow.
+        tags: []
+      - text: Apply a warm compress over the cheeks and forehead.
+        tags: []
+    monitor:
+      - text: Whether facial pain worsens or symptoms pass 10 days.
+        tags: []
+    warning_signs:
+      - text: Swelling around the eye, vision changes, severe headache, or a stiff neck.
+        tags: []
+
+  dengue:
+    source_url: https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue
+    prefer:
+      - text: Plenty of fluids - ORS, coconut water, nimbu pani, thin dal water.
+        tags: [high_potassium]
+      - text: Soft, light food - khichdi, curd rice, banana, upma.
+        tags: [contains_dairy]
+      - text: Papaya and pomegranate are commonly taken; they are safe, though not a treatment.
+        tags: [high_sugar]
+    avoid:
+      - text: Painkillers like ibuprofen, diclofenac or aspirin - they increase bleeding risk in dengue. Paracetamol is the usual choice, but confirm with your doctor.
+        tags: []
+      - text: Oily and heavy food while nauseous.
+        tags: []
+    hydration:
+      - text: This matters more than anything else in dengue. Aim to pass pale urine regularly.
+        tags: []
+    lifestyle:
+      - text: Complete rest, and use a mosquito net so you do not pass it on.
+        tags: []
+      - text: Have your platelet count checked as your doctor advises.
+        tags: []
+    monitor:
+      - text: Urine output, any bleeding, and abdominal pain. The days after the fever drops matter most.
+        tags: []
+    warning_signs:
+      - text: Severe abdominal pain, persistent vomiting, bleeding gums or nose, black stools, or sudden extreme tiredness. These are dengue warning signs - go to hospital.
+        tags: []
+
+  typhoid:
+    source_url: https://www.who.int/news-room/fact-sheets/detail/typhoid
+    prefer:
+      - text: Soft, low-fibre food while the gut is inflamed - khichdi, curd rice, banana, boiled potato.
+        tags: [contains_dairy, contains_root]
+      - text: Small frequent meals with adequate calories.
+        tags: []
+      - text: Only boiled or properly filtered water.
+        tags: []
+    avoid:
+      - text: Outside, street and reheated food completely until you recover.
+        tags: []
+      - text: High-fibre and spicy food while the bowel is inflamed.
+        tags: []
+    hydration:
+      - text: Safe boiled water and ORS. Water safety is central here.
+        tags: []
+    lifestyle:
+      - text: This needs a proper antibiotic course from a doctor. Finish it completely.
+        tags: []
+      - text: Careful handwashing - typhoid spreads through contaminated food and water.
+        tags: []
+    monitor:
+      - text: Fever pattern and any abdominal pain or bleeding.
+        tags: []
+    warning_signs:
+      - text: Severe abdominal pain, black stools, or confusion - these need emergency care.
+        tags: []
+
+  malaria:
+    source_url: https://www.who.int/news-room/fact-sheets/detail/malaria
+    prefer:
+      - text: Easily digested, energy-giving food - khichdi, dal, banana, upma.
+        tags: []
+      - text: Iron-rich food such as leafy greens and dates once you are recovering.
+        tags: []
+    avoid:
+      - text: Skipping doses of antimalarial treatment - resistance is a real problem.
+        tags: []
+      - text: Heavy oily food during fever spikes.
+        tags: []
+    hydration:
+      - text: Fluids during and after fever spikes, when sweating loses a lot.
+        tags: []
+    lifestyle:
+      - text: Mosquito nets and repellent, both to recover and to avoid reinfection.
+        tags: []
+      - text: Malaria needs confirmed diagnosis and prescribed treatment. Do not self-treat.
+        tags: []
+    monitor:
+      - text: Fever pattern, urine colour, and alertness.
+        tags: []
+    warning_signs:
+      - text: Confusion, yellow eyes, very dark urine, passing little urine, or fits - emergency care.
+        tags: []
+
+  gerd:
+    source_url: https://medlineplus.gov/gerd.html
+    prefer:
+      - text: Small, frequent meals instead of large ones.
+        tags: []
+      - text: Bland, low-fat food - dal chawal, khichdi, idli, curd.
+        tags: [contains_dairy]
+      - text: Cold milk or plain curd, which some people find settles the burning.
+        tags: [contains_dairy]
+      - text: Jeera water or saunf after meals.
+        tags: []
+    avoid:
+      - text: Chilli, tamarind, and heavily spiced curries.
+        tags: []
+      - text: Fried food, samosa, pakora, and heavy oily gravies.
+        tags: []
+      - text: Tea, coffee, citrus, tomato, chocolate, mint, and carbonated drinks.
+        tags: []
+      - text: Eating within 3 hours of lying down. This is the single most effective change.
+        tags: []
+      - text: Alcohol and smoking, which both relax the valve at the top of the stomach.
+        tags: []
+    hydration:
+      - text: Water between meals rather than large amounts with food.
+        tags: []
+    lifestyle:
+      - text: Raise the head of your bed by 6 to 8 inches - blocks under the legs, not extra pillows.
+        tags: []
+      - text: Losing even a few kilograms noticeably reduces reflux if you carry extra weight.
+        tags: []
+      - text: Loosen tight belts and waistbands after eating.
+        tags: []
+    monitor:
+      - text: Which foods reliably trigger it - a short food diary is genuinely useful.
+        tags: []
+    warning_signs:
+      - text: Difficulty or pain on swallowing, food sticking, unintentional weight loss, black stools, or vomiting blood.
+        tags: []
+
+  gastritis:
+    source_url: https://medlineplus.gov/gastritis.html
+    prefer:
+      - text: Bland, soft food - khichdi, curd rice, banana, boiled vegetables.
+        tags: [contains_dairy, contains_root]
+      - text: Small frequent meals so the stomach is never completely empty.
+        tags: []
+      - text: Plain curd or buttermilk, which many people find soothing.
+        tags: [contains_dairy]
+    avoid:
+      - text: Anti-inflammatory painkillers such as ibuprofen, diclofenac and aspirin - a common cause. Discuss alternatives with your doctor.
+        tags: []
+      - text: Chilli, pickle, vinegar, and very spicy food.
+        tags: []
+      - text: Alcohol, which directly irritates the stomach lining.
+        tags: []
+      - text: Tea and coffee on an empty stomach.
+        tags: []
+    hydration:
+      - text: Plain water through the day; avoid fizzy drinks.
+        tags: []
+    lifestyle:
+      - text: Do not skip meals - long gaps make the burning worse.
+        tags: []
+      - text: Eat your last meal well before bedtime.
+        tags: []
+    monitor:
+      - text: Whether pain relates to meals, and whether stools change colour.
+        tags: []
+    warning_signs:
+      - text: Black or tarry stools, vomiting blood, or severe unrelenting pain.
+        tags: []
+
+  gastroenteritis:
+    source_url: https://medlineplus.gov/gastroenteritis.html
+    prefer:
+      - text: ORS after every loose stool. This is the most important thing you can do.
+        tags: []
+      - text: Bananas, rice, curd rice, khichdi, and toast as your appetite returns.
+        tags: [contains_dairy]
+      - text: Coconut water and thin dal water.
+        tags: [high_potassium]
+    avoid:
+      - text: Milk for a few days - the gut often handles it poorly right after an infection.
+        tags: [contains_dairy]
+      - text: Fried, spicy and very sugary food, which can prolong the diarrhoea.
+        tags: []
+      - text: Anti-diarrhoeal tablets without medical advice, especially with fever or blood in stool.
+        tags: []
+    hydration:
+      - text: Small sips constantly rather than large amounts, which can trigger vomiting.
+        tags: []
+    lifestyle:
+      - text: Careful handwashing - this spreads very easily at home.
+        tags: []
+      - text: Stay off work or college while symptoms are active.
+        tags: []
+    monitor:
+      - text: Urine output and whether you can keep fluids down. These matter more than stool count.
+        tags: []
+    warning_signs:
+      - text: Blood in stools, passing very little urine, persistent vomiting, or severe abdominal pain.
+        tags: []
+
+  food_poisoning:
+    source_url: https://medlineplus.gov/foodborneillness.html
+    prefer:
+      - text: Rest the stomach for a few hours, then start with ORS and clear fluids.
+        tags: []
+      - text: Move to bland food - rice, banana, toast, khichdi - as symptoms settle.
+        tags: []
+    avoid:
+      - text: Eating the suspected food again, and check whether others who ate it are unwell.
+        tags: []
+      - text: Dairy, fried food and alcohol for 24 to 48 hours.
+        tags: [contains_dairy]
+    hydration:
+      - text: ORS is the priority. Small sips, frequently.
+        tags: []
+    lifestyle:
+      - text: Most cases settle in 1 to 3 days. Longer than that needs review.
+        tags: []
+      - text: Check food storage and reheating habits at home afterwards.
+        tags: []
+    monitor:
+      - text: Whether you can keep fluids down, and your urine output.
+        tags: []
+    warning_signs:
+      - text: Blood in stools, high fever, severe abdominal pain, signs of dehydration, or symptoms beyond 3 days.
+        tags: []
