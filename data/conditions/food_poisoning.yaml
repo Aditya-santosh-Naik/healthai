@@ -1,0 +1,16 @@
+code: food_poisoning
+display_name: Food Poisoning
+sources:
+  - name: MedlinePlus - Foodborne Illness
+    url: https://medlineplus.gov/foodborneillness.html
+  - name: WHO - Food safety
+    url: https://www.who.int/news-room/fact-sheets/detail/food-safety
+hallmark_symptoms: [vomiting, diarrhoea, abdominal_cramps, outside_food]
+supporting_symptoms: [nausea, abdominal_pain, weakness, low_grade_fever, watery_diarrhoea, loss_of_appetite, sweating]
+expected_symptoms: []
+contradictory_symptoms: [sore_throat, runny_nose, cough, facial_pressure]
+typical_duration_hours: {min: 2, max: 72}
+context_modifiers:
+  - factor: outside_food
+    effect: strengthen
+red_flags: [severe_dehydration, bloody_stools, persistent_vomiting, low_urine_output, confusion]

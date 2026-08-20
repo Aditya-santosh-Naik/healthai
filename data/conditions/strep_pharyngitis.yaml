@@ -1,0 +1,16 @@
+code: strep_pharyngitis
+display_name: Strep Throat (Streptococcal Pharyngitis)
+sources:
+  - name: CDC - Strep Throat
+    url: https://www.cdc.gov/group-a-strep/about/strep-throat.html
+  - name: MedlinePlus - Streptococcal Infections
+    url: https://medlineplus.gov/streptococcalinfections.html
+hallmark_symptoms: [severe_sore_throat, painful_swallowing, tonsil_exudate, swollen_lymph_nodes]
+supporting_symptoms: [fever, headache, swollen_tonsils, sore_throat, loss_of_appetite]
+expected_symptoms: [sore_throat]
+contradictory_symptoms: [cough, runny_nose, sneezing, hoarseness]
+typical_duration_hours: {min: 24, max: 168}
+context_modifiers:
+  - factor: sick_contact
+    effect: strengthen
+red_flags: [shortness_of_breath, severe_dehydration]

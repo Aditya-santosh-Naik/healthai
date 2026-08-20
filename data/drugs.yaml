@@ -1,0 +1,459 @@
+# Common Indian medicines: brand -> generic, drug class, and known side effects.
+#
+# Brand names are what people actually type. "I take Dolo" must resolve to
+# paracetamol before any safety check can run.
+#
+# side_effects drive the adverse-drug-reaction check: if a reported symptom is
+# a known side effect of something the patient already takes, say so.
+
+source_note: >-
+  Class and side-effect data compiled from MedlinePlus drug pages and NIH
+  DailyMed labels. Every row carries its own source_url.
+
+drugs:
+
+  # --- analgesics / antipyretics -------------------------------------------
+  - generic: paracetamol
+    display: Paracetamol (Acetaminophen)
+    brands: [Crocin, Dolo, Dolo 650, Calpol, Metacin, Pacimol, Paracip, Sumo]
+    drug_class: analgesic_antipyretic
+    otc: true
+    side_effects: [nausea, rash, loss_of_appetite]
+    source_url: https://medlineplus.gov/druginfo/meds/a681004.html
+
+  - generic: ibuprofen
+    display: Ibuprofen
+    brands: [Brufen, Ibugesic, Advil, Combiflam]
+    drug_class: nsaid
+    otc: true
+    side_effects: [upper_abdominal_pain, nausea, heartburn, indigestion, bloating, black_stools, dizziness]
+    source_url: https://medlineplus.gov/druginfo/meds/a682159.html
+
+  - generic: ibuprofen+paracetamol
+    display: Ibuprofen + Paracetamol
+    brands: [Combiflam, Flexon, Ibugesic Plus]
+    drug_class: nsaid
+    otc: true
+    side_effects: [upper_abdominal_pain, nausea, heartburn, indigestion, black_stools]
+    source_url: https://medlineplus.gov/druginfo/meds/a682159.html
+
+  - generic: diclofenac
+    display: Diclofenac
+    brands: [Voveran, Volini, Dynapar]
+    drug_class: nsaid
+    otc: false
+    side_effects: [upper_abdominal_pain, heartburn, nausea, indigestion, black_stools]
+    source_url: https://medlineplus.gov/druginfo/meds/a689002.html
+
+  - generic: naproxen
+    display: Naproxen
+    brands: [Naprosyn, Xenobid]
+    drug_class: nsaid
+    otc: false
+    side_effects: [upper_abdominal_pain, heartburn, nausea, bloating]
+    source_url: https://medlineplus.gov/druginfo/meds/a681029.html
+
+  - generic: aspirin
+    display: Aspirin
+    brands: [Disprin, Ecosprin, Aspicot]
+    drug_class: nsaid
+    otc: true
+    side_effects: [upper_abdominal_pain, heartburn, nausea, black_stools, bleeding_gums, nosebleed]
+    source_url: https://medlineplus.gov/druginfo/meds/a682878.html
+
+  - generic: aceclofenac
+    display: Aceclofenac
+    brands: [Zerodol, Hifenac, Aceclo]
+    drug_class: nsaid
+    otc: false
+    side_effects: [upper_abdominal_pain, indigestion, nausea, dizziness]
+    source_url: https://medlineplus.gov/druginfo/meds/a689002.html
+
+  - generic: tramadol
+    display: Tramadol
+    brands: [Ultracet, Tramazac]
+    drug_class: opioid_analgesic
+    otc: false
+    side_effects: [nausea, constipation, dizziness, confusion, vomiting]
+    source_url: https://medlineplus.gov/druginfo/meds/a695011.html
+
+  # --- antibiotics ----------------------------------------------------------
+  - generic: amoxicillin
+    display: Amoxicillin
+    brands: [Mox, Novamox, Amoxil]
+    drug_class: penicillin
+    otc: false
+    side_effects: [diarrhoea, nausea, rash, vomiting]
+    source_url: https://medlineplus.gov/druginfo/meds/a685001.html
+
+  - generic: amoxicillin+clavulanate
+    display: Amoxicillin + Clavulanic acid
+    brands: [Augmentin, Clavam, Moxikind-CV]
+    drug_class: penicillin
+    otc: false
+    side_effects: [diarrhoea, nausea, vomiting, rash, abdominal_pain]
+    source_url: https://medlineplus.gov/druginfo/meds/a685024.html
+
+  - generic: ampicillin
+    display: Ampicillin
+    brands: [Ampilin, Roscillin]
+    drug_class: penicillin
+    otc: false
+    side_effects: [diarrhoea, rash, nausea]
+    source_url: https://medlineplus.gov/druginfo/meds/a685002.html
+
+  - generic: cefixime
+    display: Cefixime
+    brands: [Taxim-O, Zifi, Mahacef]
+    drug_class: cephalosporin
+    otc: false
+    side_effects: [diarrhoea, abdominal_pain, nausea, bloating]
+    source_url: https://medlineplus.gov/druginfo/meds/a693004.html
+
+  - generic: cefuroxime
+    display: Cefuroxime
+    brands: [Ceftum, Supacef]
+    drug_class: cephalosporin
+    otc: false
+    side_effects: [diarrhoea, nausea, vomiting]
+    source_url: https://medlineplus.gov/druginfo/meds/a601206.html
+
+  - generic: azithromycin
+    display: Azithromycin
+    brands: [Azithral, Azee, Zithromax]
+    drug_class: macrolide
+    otc: false
+    side_effects: [diarrhoea, nausea, abdominal_pain, vomiting]
+    source_url: https://medlineplus.gov/druginfo/meds/a697037.html
+
+  - generic: clarithromycin
+    display: Clarithromycin
+    brands: [Claribid, Clarimac]
+    drug_class: macrolide
+    otc: false
+    side_effects: [diarrhoea, nausea, sour_taste, abdominal_pain]
+    source_url: https://medlineplus.gov/druginfo/meds/a692005.html
+
+  - generic: ciprofloxacin
+    display: Ciprofloxacin
+    brands: [Ciplox, Cifran]
+    drug_class: fluoroquinolone
+    otc: false
+    side_effects: [nausea, diarrhoea, dizziness, abdominal_pain]
+    source_url: https://medlineplus.gov/druginfo/meds/a688016.html
+
+  - generic: levofloxacin
+    display: Levofloxacin
+    brands: [Levoflox, Loxof]
+    drug_class: fluoroquinolone
+    otc: false
+    side_effects: [nausea, diarrhoea, dizziness, headache, confusion]
+    source_url: https://medlineplus.gov/druginfo/meds/a697040.html
+
+  - generic: doxycycline
+    display: Doxycycline
+    brands: [Doxt, Minicycline]
+    drug_class: tetracycline
+    otc: false
+    side_effects: [nausea, vomiting, diarrhoea, painful_swallowing, rash]
+    source_url: https://medlineplus.gov/druginfo/meds/a682063.html
+
+  - generic: metronidazole
+    display: Metronidazole
+    brands: [Flagyl, Metrogyl]
+    drug_class: nitroimidazole
+    otc: false
+    side_effects: [nausea, sour_taste, loss_of_appetite, abdominal_pain, dizziness]
+    source_url: https://medlineplus.gov/druginfo/meds/a689011.html
+
+  - generic: cotrimoxazole
+    display: Cotrimoxazole (Sulfamethoxazole + Trimethoprim)
+    brands: [Septran, Bactrim]
+    drug_class: sulfonamide
+    otc: false
+    side_effects: [nausea, vomiting, rash, loss_of_appetite]
+    source_url: https://medlineplus.gov/druginfo/meds/a684026.html
+
+  # --- gastro ---------------------------------------------------------------
+  - generic: pantoprazole
+    display: Pantoprazole
+    brands: [Pan, Pan-D, Pantocid, Pantop, Pantodac]
+    drug_class: proton_pump_inhibitor
+    otc: false
+    side_effects: [headache, diarrhoea, nausea, bloating, abdominal_pain]
+    source_url: https://medlineplus.gov/druginfo/meds/a601246.html
+
+  - generic: omeprazole
+    display: Omeprazole
+    brands: [Omez, Ocid, Omecip]
+    drug_class: proton_pump_inhibitor
+    otc: false
+    side_effects: [headache, diarrhoea, nausea, bloating, abdominal_pain]
+    source_url: https://medlineplus.gov/druginfo/meds/a693050.html
+
+  - generic: rabeprazole
+    display: Rabeprazole
+    brands: [Razo, Rabium, Veloz]
+    drug_class: proton_pump_inhibitor
+    otc: false
+    side_effects: [headache, diarrhoea, nausea, bloating]
+    source_url: https://medlineplus.gov/druginfo/meds/a699060.html
+
+  - generic: ranitidine
+    display: Ranitidine
+    brands: [Zinetac, Rantac, Aciloc]
+    drug_class: h2_blocker
+    otc: true
+    side_effects: [headache, constipation, diarrhoea, nausea]
+    source_url: https://medlineplus.gov/druginfo/meds/a601106.html
+
+  - generic: domperidone
+    display: Domperidone
+    brands: [Domstal, Vomistop]
+    drug_class: prokinetic
+    otc: false
+    side_effects: [headache, dry_cough, abdominal_cramps]
+    source_url: https://medlineplus.gov/druginfo/meds/a601098.html
+
+  - generic: ondansetron
+    display: Ondansetron
+    brands: [Emeset, Vomikind, Zofer]
+    drug_class: antiemetic
+    otc: false
+    side_effects: [headache, constipation, fatigue, dizziness]
+    source_url: https://medlineplus.gov/druginfo/meds/a601209.html
+
+  - generic: ors
+    display: Oral Rehydration Salts
+    brands: [Electral, ORS, Enerzal]
+    drug_class: rehydration
+    otc: true
+    side_effects: []
+    source_url: https://www.who.int/publications/i/item/WHO-FCH-CAH-06.1
+
+  - generic: loperamide
+    display: Loperamide
+    brands: [Imodium, Eldoper]
+    drug_class: antidiarrhoeal
+    otc: true
+    side_effects: [constipation, abdominal_cramps, dizziness, bloating]
+    source_url: https://medlineplus.gov/druginfo/meds/a682280.html
+
+  # --- cardiovascular / metabolic ------------------------------------------
+  - generic: amlodipine
+    display: Amlodipine
+    brands: [Amlong, Amlokind, Stamlo, Amlopres]
+    drug_class: calcium_channel_blocker
+    otc: false
+    side_effects: [dizziness, fatigue, headache, palpitations]
+    source_url: https://medlineplus.gov/druginfo/meds/a692044.html
+
+  - generic: telmisartan
+    display: Telmisartan
+    brands: [Telma, Telsar, Telvas]
+    drug_class: arb
+    otc: false
+    side_effects: [dizziness, fatigue, diarrhoea, headache]
+    source_url: https://medlineplus.gov/druginfo/meds/a600045.html
+
+  - generic: losartan
+    display: Losartan
+    brands: [Losar, Repace]
+    drug_class: arb
+    otc: false
+    side_effects: [dizziness, fatigue, diarrhoea]
+    source_url: https://medlineplus.gov/druginfo/meds/a695008.html
+
+  - generic: ramipril
+    display: Ramipril
+    brands: [Cardace, Ramistar]
+    drug_class: ace_inhibitor
+    otc: false
+    side_effects: [dry_cough, dizziness, fatigue, headache]
+    source_url: https://medlineplus.gov/druginfo/meds/a601167.html
+
+  - generic: enalapril
+    display: Enalapril
+    brands: [Envas, Enam]
+    drug_class: ace_inhibitor
+    otc: false
+    side_effects: [dry_cough, dizziness, fatigue]
+    source_url: https://medlineplus.gov/druginfo/meds/a686032.html
+
+  - generic: metoprolol
+    display: Metoprolol
+    brands: [Metolar, Betaloc, Starpress]
+    drug_class: beta_blocker
+    otc: false
+    side_effects: [fatigue, dizziness, shortness_of_breath, cold_hands_feet]
+    source_url: https://medlineplus.gov/druginfo/meds/a682864.html
+
+  - generic: atenolol
+    display: Atenolol
+    brands: [Aten, Tenormin]
+    drug_class: beta_blocker
+    otc: false
+    side_effects: [fatigue, dizziness, shortness_of_breath]
+    source_url: https://medlineplus.gov/druginfo/meds/a684031.html
+
+  - generic: hydrochlorothiazide
+    display: Hydrochlorothiazide
+    brands: [Aquazide, Hydrazide]
+    drug_class: thiazide_diuretic
+    otc: false
+    side_effects: [dizziness, weakness, low_urine_output, dehydration]
+    source_url: https://medlineplus.gov/druginfo/meds/a682571.html
+
+  - generic: furosemide
+    display: Furosemide
+    brands: [Lasix, Frusenex]
+    drug_class: loop_diuretic
+    otc: false
+    side_effects: [dizziness, weakness, dehydration, low_urine_output]
+    source_url: https://medlineplus.gov/druginfo/meds/a682858.html
+
+  - generic: metformin
+    display: Metformin
+    brands: [Glycomet, Glucophage, Obimet, Carbophage]
+    drug_class: biguanide
+    otc: false
+    side_effects: [diarrhoea, nausea, abdominal_pain, bloating, loss_of_appetite, sour_taste]
+    source_url: https://medlineplus.gov/druginfo/meds/a696005.html
+
+  - generic: glimepiride
+    display: Glimepiride
+    brands: [Amaryl, Glimestar, Zoryl]
+    drug_class: sulfonylurea
+    otc: false
+    side_effects: [dizziness, weakness, sweating, headache, nausea]
+    source_url: https://medlineplus.gov/druginfo/meds/a696016.html
+
+  - generic: glibenclamide
+    display: Glibenclamide
+    brands: [Daonil, Euglucon]
+    drug_class: sulfonylurea
+    otc: false
+    side_effects: [dizziness, weakness, sweating, nausea]
+    source_url: https://medlineplus.gov/druginfo/meds/a684058.html
+
+  - generic: atorvastatin
+    display: Atorvastatin
+    brands: [Atorva, Lipvas, Storvas]
+    drug_class: statin
+    otc: false
+    side_effects: [muscle_pain, joint_pain, indigestion, nausea]
+    source_url: https://medlineplus.gov/druginfo/meds/a600045.html
+
+  - generic: rosuvastatin
+    display: Rosuvastatin
+    brands: [Rosuvas, Crestor]
+    drug_class: statin
+    otc: false
+    side_effects: [muscle_pain, headache, abdominal_pain]
+    source_url: https://medlineplus.gov/druginfo/meds/a603033.html
+
+  - generic: clopidogrel
+    display: Clopidogrel
+    brands: [Clopilet, Plavix, Deplatt]
+    drug_class: antiplatelet
+    otc: false
+    side_effects: [bleeding_gums, nosebleed, black_stools, bloody_stools]
+    source_url: https://medlineplus.gov/druginfo/meds/a601040.html
+
+  - generic: warfarin
+    display: Warfarin
+    brands: [Warf, Uniwarfin]
+    drug_class: anticoagulant
+    otc: false
+    side_effects: [bleeding_gums, nosebleed, black_stools, bloody_stools, blood_in_vomit]
+    source_url: https://medlineplus.gov/druginfo/meds/a682277.html
+
+  # --- respiratory / allergy ------------------------------------------------
+  - generic: cetirizine
+    display: Cetirizine
+    brands: [Cetzine, Alerid, Okacet, Zyrtec]
+    drug_class: antihistamine
+    otc: true
+    side_effects: [fatigue, dizziness, dry_cough]
+    source_url: https://medlineplus.gov/druginfo/meds/a698026.html
+
+  - generic: levocetirizine
+    display: Levocetirizine
+    brands: [Levocet, Xyzal, Teczine]
+    drug_class: antihistamine
+    otc: true
+    side_effects: [fatigue, dizziness]
+    source_url: https://medlineplus.gov/druginfo/meds/a608030.html
+
+  - generic: montelukast
+    display: Montelukast
+    brands: [Montair, Montek]
+    drug_class: leukotriene_antagonist
+    otc: false
+    side_effects: [headache, abdominal_pain, fatigue]
+    source_url: https://medlineplus.gov/druginfo/meds/a600014.html
+
+  - generic: salbutamol
+    display: Salbutamol (Albuterol)
+    brands: [Asthalin, Ventorlin, Levolin]
+    drug_class: bronchodilator
+    otc: false
+    side_effects: [palpitations, headache, dizziness]
+    source_url: https://medlineplus.gov/druginfo/meds/a682145.html
+
+  - generic: prednisolone
+    display: Prednisolone
+    brands: [Omnacortil, Wysolone]
+    drug_class: corticosteroid
+    otc: false
+    side_effects: [upper_abdominal_pain, indigestion, sweating, palpitations]
+    source_url: https://medlineplus.gov/druginfo/meds/a682794.html
+
+  - generic: dextromethorphan
+    display: Dextromethorphan
+    brands: [Benadryl DR, Corex DX]
+    drug_class: antitussive
+    otc: true
+    side_effects: [dizziness, nausea, fatigue]
+    source_url: https://medlineplus.gov/druginfo/meds/a682492.html
+
+  # --- other ---------------------------------------------------------------
+  - generic: levothyroxine
+    display: Levothyroxine
+    brands: [Thyronorm, Eltroxin, Thyrox]
+    drug_class: thyroid_hormone
+    otc: false
+    side_effects: [palpitations, sweating, weight_loss, fatigue]
+    source_url: https://medlineplus.gov/druginfo/meds/a682461.html
+
+  - generic: chloroquine
+    display: Chloroquine
+    brands: [Lariago, Nivaquine]
+    drug_class: antimalarial
+    otc: false
+    side_effects: [nausea, vomiting, abdominal_pain, headache, vision_loss]
+    source_url: https://medlineplus.gov/druginfo/meds/a682318.html
+
+  - generic: artemether+lumefantrine
+    display: Artemether + Lumefantrine
+    brands: [Lumether, Coartem]
+    drug_class: antimalarial
+    otc: false
+    side_effects: [headache, dizziness, nausea, loss_of_appetite]
+    source_url: https://www.who.int/news-room/fact-sheets/detail/malaria
+
+  - generic: iron_folic_acid
+    display: Iron + Folic Acid
+    brands: [Livogen, Fefol, Autrin]
+    drug_class: haematinic
+    otc: true
+    side_effects: [constipation, black_stools, nausea, abdominal_pain]
+    source_url: https://medlineplus.gov/druginfo/meds/a682778.html
+
+  - generic: calcium_vitamin_d
+    display: Calcium + Vitamin D
+    brands: [Shelcal, Calcimax, Ostocalcium]
+    drug_class: supplement
+    otc: true
+    side_effects: [constipation, bloating, nausea]
+    source_url: https://medlineplus.gov/druginfo/meds/a601032.html

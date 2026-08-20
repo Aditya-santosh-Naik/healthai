@@ -1,0 +1,12 @@
+code: sinusitis
+display_name: Sinusitis (Sinus Infection)
+sources:
+  - name: MedlinePlus - Sinusitis
+    url: https://medlineplus.gov/sinusitis.html
+hallmark_symptoms: [facial_pressure, facial_pain, blocked_nose, postnasal_drip]
+supporting_symptoms: [headache, sputum_discoloured, cough, low_grade_fever, loss_of_smell, runny_nose]
+expected_symptoms: [blocked_nose]
+contradictory_symptoms: [watery_diarrhoea, severe_body_ache, shortness_of_breath]
+typical_duration_hours: {min: 168, max: 672}
+context_modifiers: []
+red_flags: [vision_loss, confusion, stiff_neck, high_fever]

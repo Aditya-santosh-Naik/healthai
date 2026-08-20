@@ -1,0 +1,18 @@
+code: gerd
+display_name: GERD (Acid Reflux)
+sources:
+  - name: MedlinePlus - GERD
+    url: https://medlineplus.gov/gerd.html
+  - name: NIH NIDDK - Acid Reflux (GER and GERD)
+    url: https://www.niddk.nih.gov/health-information/digestive-diseases/acid-reflux-ger-gerd-adults
+hallmark_symptoms: [heartburn, acid_regurgitation, symptoms_worse_lying_down, relief_with_antacid]
+supporting_symptoms: [sour_taste, chest_tightness, symptoms_worse_after_food, hoarseness, belching, indigestion, cough_worse_at_night]
+expected_symptoms: [heartburn]
+contradictory_symptoms: [fever, chills, diarrhoea, body_ache]
+typical_duration_hours: {min: 72, max: 2160}
+context_modifiers:
+  - factor: smoker
+    effect: strengthen
+  - factor: alcohol
+    effect: strengthen
+red_flags: [painful_swallowing, black_stools, blood_in_vomit, chest_pain]

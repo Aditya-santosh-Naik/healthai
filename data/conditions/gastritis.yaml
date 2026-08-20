@@ -1,0 +1,18 @@
+code: gastritis
+display_name: Gastritis
+sources:
+  - name: MedlinePlus - Gastritis
+    url: https://medlineplus.gov/gastritis.html
+  - name: NIH NIDDK - Gastritis and Gastropathy
+    url: https://www.niddk.nih.gov/health-information/digestive-diseases/gastritis-gastropathy
+hallmark_symptoms: [upper_abdominal_pain, indigestion, early_satiety]
+supporting_symptoms: [nausea, bloating, loss_of_appetite, belching, vomiting, symptoms_worse_after_food, abdominal_pain]
+expected_symptoms: [upper_abdominal_pain]
+contradictory_symptoms: [fever, cough, sore_throat, runny_nose]
+typical_duration_hours: {min: 24, max: 720}
+context_modifiers:
+  - factor: alcohol
+    effect: strengthen
+  - factor: nsaid_use
+    effect: strengthen
+red_flags: [black_stools, blood_in_vomit, severe_abdominal_pain]

@@ -1,0 +1,16 @@
+code: gastroenteritis
+display_name: Gastroenteritis (Stomach Flu)
+sources:
+  - name: MedlinePlus - Gastroenteritis
+    url: https://medlineplus.gov/gastroenteritis.html
+  - name: NIH NIDDK - Viral Gastroenteritis
+    url: https://www.niddk.nih.gov/health-information/digestive-diseases/viral-gastroenteritis
+hallmark_symptoms: [diarrhoea, vomiting, abdominal_cramps]
+supporting_symptoms: [nausea, low_grade_fever, watery_diarrhoea, weakness, abdominal_pain, loss_of_appetite, body_ache, fatigue]
+expected_symptoms: [diarrhoea]
+contradictory_symptoms: [sore_throat, runny_nose, facial_pressure, heartburn, constipation]
+typical_duration_hours: {min: 24, max: 168}
+context_modifiers:
+  - factor: sick_contact
+    effect: strengthen
+red_flags: [severe_dehydration, bloody_stools, low_urine_output, persistent_vomiting, severe_abdominal_pain]

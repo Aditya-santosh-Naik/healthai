@@ -1,0 +1,18 @@
+code: pneumonia
+display_name: Pneumonia
+sources:
+  - name: MedlinePlus - Pneumonia
+    url: https://medlineplus.gov/pneumonia.html
+  - name: WHO - Pneumonia
+    url: https://www.who.int/news-room/fact-sheets/detail/pneumonia
+hallmark_symptoms: [productive_cough, shortness_of_breath, high_fever, chest_pain_breathing]
+supporting_symptoms: [chills, fatigue, sputum_discoloured, rapid_breathing, weakness, sweating, loss_of_appetite]
+expected_symptoms: [cough]
+contradictory_symptoms: [heartburn, facial_pressure, runny_nose]
+typical_duration_hours: {min: 48, max: 336}
+context_modifiers:
+  - factor: smoker
+    effect: strengthen
+  - factor: elderly
+    effect: strengthen
+red_flags: [blue_lips, confusion, breathlessness_at_rest, blood_in_sputum, chest_pain]

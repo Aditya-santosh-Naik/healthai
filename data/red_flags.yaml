@@ -1,0 +1,160 @@
+# Red flags. Checked BEFORE symptom reasoning; a hit halts the pipeline.
+#
+# Deliberately over-sensitive. A false escalation costs a wasted trip; a missed
+# one costs much more. Independent of any condition.
+#
+# Match types:
+#   any_of  -> any single symptom in the list fires the rule
+#   all_of  -> every symptom must be present (used for combinations)
+
+red_flags:
+
+  - code: cardiac_chest_pain
+    urgency: emergency
+    all_of: [chest_pain, chest_pain_radiating]
+    message: >-
+      Chest pain that spreads to the arm, jaw or back can be a sign of a heart
+      attack, especially with sweating or breathlessness. This needs emergency
+      assessment now, not later.
+    action: Call emergency services or go to the nearest emergency department immediately.
+    source_name: NHS - Heart attack symptoms
+    source_url: https://www.nhs.uk/conditions/heart-attack/
+
+  - code: cardiac_chest_pain_sweating
+    urgency: emergency
+    all_of: [chest_pain, sweating]
+    message: >-
+      Chest pain together with sweating can indicate a heart problem and needs
+      emergency assessment now.
+    action: Call emergency services or go to the nearest emergency department immediately.
+    source_name: NHS - Heart attack symptoms
+    source_url: https://www.nhs.uk/conditions/heart-attack/
+
+  - code: radiating_arm_pain
+    urgency: emergency
+    any_of: [chest_pain_radiating]
+    message: >-
+      Pain spreading from the chest to the arm, jaw or back is treated as a
+      cardiac emergency until proven otherwise.
+    action: Call emergency services or go to the nearest emergency department immediately.
+    source_name: MedlinePlus - Heart attack
+    source_url: https://medlineplus.gov/heartattack.html
+
+  - code: severe_breathing_difficulty
+    urgency: emergency
+    any_of: [breathlessness_at_rest, blue_lips, unable_to_speak_sentences]
+    message: >-
+      Severe difficulty breathing, blue lips, or being too breathless to finish
+      a sentence are emergency signs.
+    action: Call emergency services or go to the nearest emergency department immediately.
+    source_name: NHS - Shortness of breath
+    source_url: https://www.nhs.uk/symptoms/shortness-of-breath/
+
+  - code: stroke_signs
+    urgency: emergency
+    any_of: [sudden_weakness_one_side, vision_loss]
+    message: >-
+      Sudden weakness on one side, face drooping, slurred speech or sudden
+      vision loss can be signs of a stroke. Time matters enormously here.
+    action: Call emergency services immediately.
+    source_name: MedlinePlus - Stroke
+    source_url: https://medlineplus.gov/stroke.html
+
+  - code: altered_consciousness
+    urgency: emergency
+    any_of: [seizures, fainting, confusion, lethargy_restlessness]
+    message: >-
+      Seizures, fainting, confusion or being unusually drowsy or restless need
+      urgent medical assessment.
+    action: Go to the nearest emergency department now.
+    source_name: MedlinePlus - Altered mental status
+    source_url: https://medlineplus.gov/ency/article/003202.htm
+
+  - code: meningitis_signs
+    urgency: emergency
+    all_of: [fever, stiff_neck]
+    message: >-
+      Fever with a stiff neck can indicate a serious infection around the brain
+      and spinal cord.
+    action: Go to the nearest emergency department now.
+    source_name: MedlinePlus - Meningitis
+    source_url: https://medlineplus.gov/meningitis.html
+
+  - code: gi_bleeding
+    urgency: emergency
+    any_of: [blood_in_vomit, black_stools, bloody_stools]
+    message: >-
+      Vomiting blood, or black or bloody stools, can mean bleeding inside the
+      digestive tract.
+    action: Go to the nearest emergency department now.
+    source_name: MedlinePlus - Gastrointestinal bleeding
+    source_url: https://medlineplus.gov/gastrointestinalbleeding.html
+
+  - code: dengue_warning_signs
+    urgency: emergency
+    any_of: [bleeding_gums, nosebleed]
+    message: >-
+      Bleeding from the gums or nose during a fever illness is a recognised
+      dengue warning sign and needs same-day assessment.
+    action: Go to a hospital today for assessment and a blood count.
+    source_name: WHO - Dengue and severe dengue
+    source_url: https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue
+
+  - code: severe_abdominal_pain_flag
+    urgency: emergency
+    any_of: [severe_abdominal_pain]
+    message: >-
+      Severe abdominal pain can indicate a condition needing surgical
+      assessment, and is also a dengue warning sign during a fever illness.
+    action: Go to the nearest emergency department now.
+    source_name: WHO - Dengue and severe dengue
+    source_url: https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue
+
+  - code: persistent_vomiting_flag
+    urgency: urgent
+    any_of: [persistent_vomiting]
+    message: >-
+      Not being able to keep any fluids down risks dehydration quickly, and is
+      a dengue warning sign during a fever illness.
+    action: Seek medical care today.
+    source_name: WHO - Dengue and severe dengue
+    source_url: https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue
+
+  - code: severe_dehydration_flag
+    urgency: emergency
+    any_of: [severe_dehydration, low_urine_output]
+    message: >-
+      Passing very little urine, sunken eyes or extreme dryness are signs of
+      severe dehydration.
+    action: Seek medical care immediately.
+    source_name: MedlinePlus - Dehydration
+    source_url: https://medlineplus.gov/dehydration.html
+
+  - code: coughing_blood
+    urgency: urgent
+    any_of: [blood_in_sputum]
+    message: >-
+      Coughing up blood always needs to be assessed by a doctor, even if you
+      feel otherwise well.
+    action: See a doctor today.
+    source_name: MedlinePlus - Coughing up blood
+    source_url: https://medlineplus.gov/ency/article/003073.htm
+
+  - code: jaundice
+    urgency: urgent
+    any_of: [yellow_eyes]
+    message: >-
+      Yellowing of the eyes or skin suggests the liver needs to be checked.
+    action: See a doctor today.
+    source_name: MedlinePlus - Jaundice
+    source_url: https://medlineplus.gov/jaundice.html
+
+  - code: chest_pain_general
+    urgency: urgent
+    any_of: [chest_pain]
+    message: >-
+      Chest pain is not something this assistant will try to explain away. It
+      needs a person with a stethoscope and an ECG.
+    action: Seek medical assessment today. If it is severe, crushing, or comes with sweating or breathlessness, treat it as an emergency.
+    source_name: MedlinePlus - Chest pain
+    source_url: https://medlineplus.gov/chestpain.html

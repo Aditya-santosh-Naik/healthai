@@ -1,0 +1,468 @@
+# Interaction and contraindication rules.
+#
+# type:
+#   drug_drug          subject generic  x  object generic
+#   drug_condition     subject generic  x  object patient condition keyword
+#   drug_allergy_class subject generic  x  object allergen class
+#
+# severity: caution | avoid
+#
+# Cross-reactivity is by CLASS, not by name. A penicillin allergy must flag
+# amoxicillin even though the words share no substring.
+
+allergy_cross_reactivity:
+  penicillin:
+    display: Penicillin group
+    flags_classes: [penicillin]
+    also_caution_classes: [cephalosporin]
+    note: >-
+      A small number of people allergic to penicillin also react to
+      cephalosporins, so those are flagged as caution rather than avoid.
+    source_url: https://medlineplus.gov/penicillinallergy.html
+  cephalosporin:
+    display: Cephalosporin group
+    flags_classes: [cephalosporin]
+    also_caution_classes: [penicillin]
+    source_url: https://medlineplus.gov/penicillinallergy.html
+  nsaid:
+    display: Painkillers (NSAID group)
+    flags_classes: [nsaid]
+    also_caution_classes: []
+    note: >-
+      NSAID reactions are usually class-wide, so ibuprofen, diclofenac,
+      naproxen and aspirin are all flagged together.
+    source_url: https://medlineplus.gov/druginfo/meds/a682159.html
+  sulfonamide:
+    display: Sulfa drugs
+    flags_classes: [sulfonamide]
+    also_caution_classes: []
+    source_url: https://medlineplus.gov/druginfo/meds/a684026.html
+  macrolide:
+    display: Macrolide group
+    flags_classes: [macrolide]
+    also_caution_classes: []
+    source_url: https://medlineplus.gov/druginfo/meds/a697037.html
+  fluoroquinolone:
+    display: Fluoroquinolone group
+    flags_classes: [fluoroquinolone]
+    also_caution_classes: []
+    source_url: https://medlineplus.gov/druginfo/meds/a688016.html
+  tetracycline:
+    display: Tetracycline group
+    flags_classes: [tetracycline]
+    also_caution_classes: []
+    source_url: https://medlineplus.gov/druginfo/meds/a682063.html
+
+interactions:
+
+  # --- drug x drug ----------------------------------------------------------
+  - subject: ibuprofen
+    object: aspirin
+    type: drug_drug
+    severity: avoid
+    reason: >-
+      Taking two anti-inflammatory painkillers together sharply raises the risk
+      of stomach bleeding, and ibuprofen can blunt the heart-protective effect
+      of low-dose aspirin.
+    source_url: https://medlineplus.gov/druginfo/meds/a682159.html
+
+  - subject: ibuprofen
+    object: warfarin
+    type: drug_drug
+    severity: avoid
+    reason: >-
+      Anti-inflammatory painkillers increase bleeding risk considerably when
+      taken with a blood thinner.
+    source_url: https://medlineplus.gov/druginfo/meds/a682277.html
+
+  - subject: ibuprofen
+    object: clopidogrel
+    type: drug_drug
+    severity: avoid
+    reason: >-
+      Combining an anti-inflammatory painkiller with a blood thinner raises the
+      risk of stomach bleeding.
+    source_url: https://medlineplus.gov/druginfo/meds/a601040.html
+
+  - subject: diclofenac
+    object: warfarin
+    type: drug_drug
+    severity: avoid
+    reason: Anti-inflammatory painkillers raise bleeding risk with blood thinners.
+    source_url: https://medlineplus.gov/druginfo/meds/a682277.html
+
+  - subject: naproxen
+    object: warfarin
+    type: drug_drug
+    severity: avoid
+    reason: Anti-inflammatory painkillers raise bleeding risk with blood thinners.
+    source_url: https://medlineplus.gov/druginfo/meds/a682277.html
+
+  - subject: aspirin
+    object: warfarin
+    type: drug_drug
+    severity: avoid
+    reason: Two medicines that both reduce clotting substantially raise bleeding risk.
+    source_url: https://medlineplus.gov/druginfo/meds/a682277.html
+
+  - subject: ibuprofen
+    object: ramipril
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Anti-inflammatory painkillers can reduce the effect of blood pressure
+      medicines and put extra strain on the kidneys.
+    source_url: https://medlineplus.gov/druginfo/meds/a601167.html
+
+  - subject: ibuprofen
+    object: enalapril
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Anti-inflammatory painkillers can reduce the blood-pressure-lowering
+      effect and add kidney strain.
+    source_url: https://medlineplus.gov/druginfo/meds/a686032.html
+
+  - subject: ibuprofen
+    object: telmisartan
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Anti-inflammatory painkillers can work against blood pressure medicines
+      and add kidney strain.
+    source_url: https://medlineplus.gov/druginfo/meds/a600045.html
+
+  - subject: ibuprofen
+    object: losartan
+    type: drug_drug
+    severity: caution
+    reason: Anti-inflammatory painkillers can reduce the effect of this blood pressure medicine.
+    source_url: https://medlineplus.gov/druginfo/meds/a695008.html
+
+  - subject: ibuprofen
+    object: amlodipine
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Regular use of anti-inflammatory painkillers can raise blood pressure and
+      work against your blood pressure medicine.
+    source_url: https://medlineplus.gov/druginfo/meds/a692044.html
+
+  - subject: diclofenac
+    object: amlodipine
+    type: drug_drug
+    severity: caution
+    reason: Regular anti-inflammatory painkiller use can raise blood pressure.
+    source_url: https://medlineplus.gov/druginfo/meds/a692044.html
+
+  - subject: ibuprofen
+    object: hydrochlorothiazide
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Anti-inflammatory painkillers can reduce the effect of water tablets and
+      add strain on the kidneys.
+    source_url: https://medlineplus.gov/druginfo/meds/a682571.html
+
+  - subject: ibuprofen
+    object: furosemide
+    type: drug_drug
+    severity: caution
+    reason: Anti-inflammatory painkillers can blunt the effect of this water tablet.
+    source_url: https://medlineplus.gov/druginfo/meds/a682858.html
+
+  - subject: ibuprofen
+    object: prednisolone
+    type: drug_drug
+    severity: avoid
+    reason: >-
+      A steroid together with an anti-inflammatory painkiller markedly raises
+      the risk of stomach ulcers and bleeding.
+    source_url: https://medlineplus.gov/druginfo/meds/a682794.html
+
+  - subject: clarithromycin
+    object: atorvastatin
+    type: drug_drug
+    severity: avoid
+    reason: >-
+      This antibiotic raises statin levels in the blood, which can cause severe
+      muscle damage.
+    source_url: https://medlineplus.gov/druginfo/meds/a692005.html
+
+  - subject: clarithromycin
+    object: warfarin
+    type: drug_drug
+    severity: avoid
+    reason: This antibiotic can strongly increase the effect of a blood thinner.
+    source_url: https://medlineplus.gov/druginfo/meds/a692005.html
+
+  - subject: azithromycin
+    object: warfarin
+    type: drug_drug
+    severity: caution
+    reason: This antibiotic can increase the effect of a blood thinner.
+    source_url: https://medlineplus.gov/druginfo/meds/a697037.html
+
+  - subject: ciprofloxacin
+    object: warfarin
+    type: drug_drug
+    severity: avoid
+    reason: This antibiotic can strongly increase the effect of a blood thinner.
+    source_url: https://medlineplus.gov/druginfo/meds/a688016.html
+
+  - subject: ciprofloxacin
+    object: calcium_vitamin_d
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Calcium binds this antibiotic in the gut and stops it being absorbed
+      properly. Timing them apart matters.
+    source_url: https://medlineplus.gov/druginfo/meds/a688016.html
+
+  - subject: doxycycline
+    object: calcium_vitamin_d
+    type: drug_drug
+    severity: caution
+    reason: Calcium reduces absorption of this antibiotic.
+    source_url: https://medlineplus.gov/druginfo/meds/a682063.html
+
+  - subject: doxycycline
+    object: iron_folic_acid
+    type: drug_drug
+    severity: caution
+    reason: Iron reduces absorption of this antibiotic.
+    source_url: https://medlineplus.gov/druginfo/meds/a682063.html
+
+  - subject: levofloxacin
+    object: iron_folic_acid
+    type: drug_drug
+    severity: caution
+    reason: Iron binds this antibiotic in the gut and reduces its absorption.
+    source_url: https://medlineplus.gov/druginfo/meds/a697040.html
+
+  - subject: pantoprazole
+    object: clopidogrel
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Some acid-reducing medicines can lessen how well this blood thinner
+      works. Worth confirming with your doctor which combination is right.
+    source_url: https://medlineplus.gov/druginfo/meds/a601040.html
+
+  - subject: omeprazole
+    object: clopidogrel
+    type: drug_drug
+    severity: avoid
+    reason: >-
+      Omeprazole can meaningfully reduce the effect of this blood thinner. An
+      alternative acid-reducing medicine is usually preferred.
+    source_url: https://medlineplus.gov/druginfo/meds/a601040.html
+
+  - subject: metformin
+    object: furosemide
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Dehydration from a water tablet can affect kidney function, which matters
+      for metformin safety, particularly during a vomiting or diarrhoea illness.
+    source_url: https://medlineplus.gov/druginfo/meds/a696005.html
+
+  - subject: prednisolone
+    object: metformin
+    type: drug_drug
+    severity: caution
+    reason: Steroids raise blood sugar and can work against diabetes medicines.
+    source_url: https://medlineplus.gov/druginfo/meds/a682794.html
+
+  - subject: prednisolone
+    object: glimepiride
+    type: drug_drug
+    severity: caution
+    reason: Steroids raise blood sugar and can work against diabetes medicines.
+    source_url: https://medlineplus.gov/druginfo/meds/a682794.html
+
+  - subject: ondansetron
+    object: tramadol
+    type: drug_drug
+    severity: caution
+    reason: Used together these can reduce pain relief and, rarely, affect heart rhythm.
+    source_url: https://medlineplus.gov/druginfo/meds/a601209.html
+
+  - subject: paracetamol
+    object: warfarin
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Regular high use of paracetamol can increase the effect of a blood
+      thinner. Occasional use is generally considered lower risk.
+    source_url: https://medlineplus.gov/druginfo/meds/a682277.html
+
+  - subject: metoprolol
+    object: salbutamol
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Beta blockers can oppose the effect of inhalers that open the airways.
+    source_url: https://medlineplus.gov/druginfo/meds/a682864.html
+
+  - subject: levothyroxine
+    object: calcium_vitamin_d
+    type: drug_drug
+    severity: caution
+    reason: Calcium reduces absorption of thyroid medicine when taken at the same time.
+    source_url: https://medlineplus.gov/druginfo/meds/a682461.html
+
+  - subject: levothyroxine
+    object: iron_folic_acid
+    type: drug_drug
+    severity: caution
+    reason: Iron reduces absorption of thyroid medicine when taken at the same time.
+    source_url: https://medlineplus.gov/druginfo/meds/a682461.html
+
+  - subject: loperamide
+    object: ciprofloxacin
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Slowing the bowel during a bacterial gut infection can prolong the
+      illness. Worth discussing before combining.
+    source_url: https://medlineplus.gov/druginfo/meds/a682280.html
+
+  # --- drug x condition -----------------------------------------------------
+  - subject: ibuprofen
+    object: hypertension
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Anti-inflammatory painkillers can raise blood pressure and reduce how
+      well blood pressure medicines work.
+    source_url: https://medlineplus.gov/druginfo/meds/a682159.html
+
+  - subject: diclofenac
+    object: hypertension
+    type: drug_condition
+    severity: caution
+    reason: Anti-inflammatory painkillers can raise blood pressure.
+    source_url: https://medlineplus.gov/druginfo/meds/a689002.html
+
+  - subject: naproxen
+    object: hypertension
+    type: drug_condition
+    severity: caution
+    reason: Anti-inflammatory painkillers can raise blood pressure.
+    source_url: https://medlineplus.gov/druginfo/meds/a681029.html
+
+  - subject: aceclofenac
+    object: hypertension
+    type: drug_condition
+    severity: caution
+    reason: Anti-inflammatory painkillers can raise blood pressure.
+    source_url: https://medlineplus.gov/druginfo/meds/a689002.html
+
+  - subject: ibuprofen
+    object: gerd
+    type: drug_condition
+    severity: avoid
+    reason: >-
+      Anti-inflammatory painkillers irritate the stomach lining and typically
+      make reflux and acid symptoms worse.
+    source_url: https://medlineplus.gov/druginfo/meds/a682159.html
+
+  - subject: ibuprofen
+    object: gastritis
+    type: drug_condition
+    severity: avoid
+    reason: >-
+      Anti-inflammatory painkillers are a common cause of stomach lining
+      irritation and can worsen gastritis.
+    source_url: https://medlineplus.gov/gastritis.html
+
+  - subject: diclofenac
+    object: gastritis
+    type: drug_condition
+    severity: avoid
+    reason: Anti-inflammatory painkillers can worsen stomach lining irritation.
+    source_url: https://medlineplus.gov/gastritis.html
+
+  - subject: aspirin
+    object: gastritis
+    type: drug_condition
+    severity: avoid
+    reason: Aspirin irritates the stomach lining and can worsen gastritis.
+    source_url: https://medlineplus.gov/druginfo/meds/a682878.html
+
+  - subject: aspirin
+    object: peptic ulcer
+    type: drug_condition
+    severity: avoid
+    reason: Aspirin substantially raises the risk of ulcer bleeding.
+    source_url: https://medlineplus.gov/druginfo/meds/a682878.html
+
+  - subject: ibuprofen
+    object: kidney disease
+    type: drug_condition
+    severity: avoid
+    reason: >-
+      Anti-inflammatory painkillers reduce blood flow to the kidneys and can
+      worsen existing kidney problems.
+    source_url: https://medlineplus.gov/druginfo/meds/a682159.html
+
+  - subject: ibuprofen
+    object: asthma
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Anti-inflammatory painkillers trigger wheezing in some people with
+      asthma.
+    source_url: https://medlineplus.gov/druginfo/meds/a682159.html
+
+  - subject: metformin
+    object: kidney disease
+    type: drug_condition
+    severity: avoid
+    reason: >-
+      Reduced kidney function affects how metformin is cleared from the body.
+      This needs a doctor's review, not a self-adjustment.
+    source_url: https://medlineplus.gov/druginfo/meds/a696005.html
+
+  - subject: metoprolol
+    object: asthma
+    type: drug_condition
+    severity: caution
+    reason: Beta blockers can tighten the airways in some people with asthma.
+    source_url: https://medlineplus.gov/druginfo/meds/a682864.html
+
+  - subject: atenolol
+    object: asthma
+    type: drug_condition
+    severity: caution
+    reason: Beta blockers can tighten the airways in some people with asthma.
+    source_url: https://medlineplus.gov/druginfo/meds/a684031.html
+
+  - subject: prednisolone
+    object: type 2 diabetes
+    type: drug_condition
+    severity: caution
+    reason: Steroids raise blood sugar, so readings may run higher than usual.
+    source_url: https://medlineplus.gov/druginfo/meds/a682794.html
+
+  - subject: prednisolone
+    object: hypertension
+    type: drug_condition
+    severity: caution
+    reason: Steroids can cause fluid retention and raise blood pressure.
+    source_url: https://medlineplus.gov/druginfo/meds/a682794.html
+
+  - subject: loperamide
+    object: inflammatory bowel disease
+    type: drug_condition
+    severity: avoid
+    reason: Slowing the bowel can cause serious complications in this condition.
+    source_url: https://medlineplus.gov/druginfo/meds/a682280.html
+
+  - subject: chloroquine
+    object: epilepsy
+    type: drug_condition
+    severity: caution
+    reason: This antimalarial can lower the seizure threshold.
+    source_url: https://medlineplus.gov/druginfo/meds/a682318.html

@@ -1,0 +1,18 @@
+code: malaria
+display_name: Malaria
+sources:
+  - name: WHO - Malaria
+    url: https://www.who.int/news-room/fact-sheets/detail/malaria
+  - name: MedlinePlus - Malaria
+    url: https://medlineplus.gov/malaria.html
+hallmark_symptoms: [fever, chills, sweating, headache]
+supporting_symptoms: [body_ache, nausea, vomiting, fatigue, weakness, muscle_pain, dark_urine, loss_of_appetite]
+expected_symptoms: [fever]
+contradictory_symptoms: [sore_throat, runny_nose, facial_pressure, heartburn]
+typical_duration_hours: {min: 48, max: 336}
+context_modifiers:
+  - factor: mosquito_exposure
+    effect: strengthen
+  - factor: recent_travel
+    effect: strengthen
+red_flags: [confusion, yellow_eyes, low_urine_output, seizures, lethargy_restlessness]

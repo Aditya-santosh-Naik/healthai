@@ -1,0 +1,16 @@
+code: covid19
+display_name: COVID-19
+sources:
+  - name: WHO - Coronavirus disease (COVID-19)
+    url: https://www.who.int/health-topics/coronavirus
+  - name: CDC - COVID-19 Symptoms
+    url: https://www.cdc.gov/covid/signs-symptoms/
+hallmark_symptoms: [loss_of_smell, loss_of_taste, dry_cough, fever]
+supporting_symptoms: [fatigue, sore_throat, headache, body_ache, shortness_of_breath, blocked_nose, malaise]
+expected_symptoms: []
+contradictory_symptoms: [facial_pressure, heartburn]
+typical_duration_hours: {min: 48, max: 336}
+context_modifiers:
+  - factor: sick_contact
+    effect: strengthen
+red_flags: [shortness_of_breath, blue_lips, chest_pain, confusion]
