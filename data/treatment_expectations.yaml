@@ -1,0 +1,167 @@
+# What treatment a condition usually needs.
+#
+# This is sourced health information, NOT a prescription. It never names a
+# medicine as a recommendation for this patient, never gives a dose, and always
+# routes the decision to a clinician. It exists so the patient knows whether
+# they are dealing with something that needs a doctor's prescription or
+# something that resolves on its own.
+#
+# needs_prescription: true  -> "this normally requires a doctor-prescribed course"
+# self_limiting: true       -> "this usually settles on its own"
+
+# The only medicines this system may mention by name, and only as general
+# information with a see-a-professional caveat. No doses, ever (invariant 7).
+otc_general_information:
+  - generic: paracetamol
+    display: Paracetamol (sold as Crocin, Dolo, Calpol)
+    used_for: fever and pain
+    caveat: >-
+      It is present in many combination cold and flu products, so it is easy to
+      take more than intended. How much is safe for you depends on your weight,
+      liver health and other medicines. Ask a doctor or pharmacist.
+    source_url: https://medlineplus.gov/druginfo/meds/a681004.html
+  - generic: ors
+    display: Oral rehydration salts (sold as Electral, ORS)
+    used_for: replacing fluids lost through diarrhoea, vomiting or fever
+    caveat: >-
+      Mix with the exact volume of clean water stated on the packet. Using less
+      water makes it too concentrated and can make dehydration worse.
+    source_url: https://www.who.int/publications/i/item/WHO-FCH-CAH-06.1
+
+conditions:
+
+  common_cold:
+    self_limiting: true
+    needs_prescription: false
+    summary: >-
+      A cold is caused by a virus and clears on its own, usually within seven to
+      ten days. Antibiotics do not treat it and do not shorten it.
+    source_url: https://medlineplus.gov/commoncold.html
+
+  influenza:
+    self_limiting: true
+    needs_prescription: false
+    summary: >-
+      Flu is viral, so antibiotics do not help. Most healthy adults recover with
+      rest and fluids. Prescription antiviral medicines exist and can shorten
+      the illness, but they must be started early and only a doctor can decide
+      whether they are appropriate for you.
+    source_url: https://medlineplus.gov/flu.html
+
+  covid19:
+    self_limiting: true
+    needs_prescription: false
+    summary: >-
+      Most people recover at home with rest and fluids. Antiviral treatment
+      exists for people at higher risk, but it is prescription-only and needs a
+      doctor's assessment.
+    source_url: https://www.who.int/health-topics/coronavirus
+
+  acute_bronchitis:
+    self_limiting: true
+    needs_prescription: false
+    summary: >-
+      Acute bronchitis is nearly always viral, so antibiotics usually do not
+      help. The cough often lasts two to three weeks even as you recover.
+      Stopping smoking matters more here than any medicine.
+    source_url: https://medlineplus.gov/acutebronchitis.html
+
+  pneumonia:
+    self_limiting: false
+    needs_prescription: true
+    summary: >-
+      Bacterial pneumonia needs a prescription antibiotic course, and the right
+      choice depends on your age, other conditions and the likely organism. This
+      is not safe to self-treat, and leftover antibiotics must not be used.
+      See a doctor, who will usually examine you and arrange a chest X-ray.
+    source_url: https://medlineplus.gov/pneumonia.html
+
+  strep_pharyngitis:
+    self_limiting: false
+    needs_prescription: true
+    summary: >-
+      If a throat swab confirms strep, a doctor will prescribe an antibiotic
+      course. Because most sore throats are viral, the test comes first. Tell
+      your doctor if you have a penicillin allergy, as a different class is
+      needed.
+    source_url: https://www.cdc.gov/group-a-strep/about/strep-throat.html
+
+  sinusitis:
+    self_limiting: true
+    needs_prescription: false
+    summary: >-
+      Most sinusitis is viral and settles within about ten days with steam,
+      saline rinses and time. Symptoms lasting beyond ten days, or worsening
+      after improving, should be reviewed by a doctor who may consider
+      antibiotics.
+    source_url: https://medlineplus.gov/sinusitis.html
+
+  dengue:
+    self_limiting: false
+    needs_prescription: false
+    summary: >-
+      There is no specific antiviral treatment for dengue. Care is supportive,
+      with fluids and rest, but it must be medically supervised because the
+      platelet count needs monitoring. Anti-inflammatory painkillers such as
+      ibuprofen, diclofenac and aspirin should be avoided because they increase
+      bleeding risk.
+    source_url: https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue
+
+  typhoid:
+    self_limiting: false
+    needs_prescription: true
+    summary: >-
+      Typhoid is bacterial and requires a full antibiotic course prescribed by a
+      doctor after a blood test confirms it. Antibiotic resistance in typhoid is
+      a growing problem in South Asia, which is exactly why the choice must be a
+      clinician's. Do not self-treat this.
+    source_url: https://www.who.int/news-room/fact-sheets/detail/typhoid
+
+  malaria:
+    self_limiting: false
+    needs_prescription: true
+    summary: >-
+      Malaria needs a blood test to confirm it and prescription antimalarial
+      treatment chosen for the specific parasite and local resistance pattern.
+      Taking antimalarials without a confirmed diagnosis drives resistance and
+      can mask another serious illness.
+    source_url: https://www.who.int/news-room/fact-sheets/detail/malaria
+
+  gerd:
+    self_limiting: false
+    needs_prescription: false
+    summary: >-
+      Reflux is usually managed first with changes to meal timing, portion size
+      and trigger foods, plus raising the head of the bed. Acid-reducing
+      medicines are commonly prescribed if that is not enough, but which one and
+      for how long is a doctor's decision.
+    source_url: https://medlineplus.gov/gerd.html
+
+  gastritis:
+    self_limiting: false
+    needs_prescription: false
+    summary: >-
+      Treatment depends on the cause. If Helicobacter pylori is found it needs a
+      specific prescribed combination of medicines. Anti-inflammatory
+      painkillers are a common cause and worth reviewing with your doctor -
+      but do not stop a prescribed medicine on your own.
+    source_url: https://medlineplus.gov/gastritis.html
+
+  gastroenteritis:
+    self_limiting: true
+    needs_prescription: false
+    summary: >-
+      Usually viral and settles in one to three days. Rehydration is the actual
+      treatment. Antibiotics are not normally needed, and medicines that stop
+      diarrhoea can prolong some infections, so they should not be used with
+      fever or blood in the stool without medical advice.
+    source_url: https://medlineplus.gov/gastroenteritis.html
+
+  food_poisoning:
+    self_limiting: true
+    needs_prescription: false
+    summary: >-
+      Most cases settle within one to three days once the body clears the cause.
+      Rehydration is the mainstay. Anti-diarrhoeal medicines should be avoided
+      if there is fever or blood in the stool.
+    source_url: https://medlineplus.gov/foodborneillness.html
