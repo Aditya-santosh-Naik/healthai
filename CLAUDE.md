@@ -362,49 +362,62 @@ The **"What to tell your doctor"** block is a short copyable clinical summary â€
 > **Update this section at the end of every session. It is the project's only memory across sessions.**
 
 ```
-[x] Day 1  Verify Ollama FIRST. Scaffold, full DB schema, JWT auth, profile CRUD,
-           onboarding wizard, seed script with demo patients.
+[x] Day 1  Ollama verified. Scaffold, full DB schema, JWT auth, profile CRUD,
+           onboarding wizard, seed script with 3 demo patients.
 [x] Day 2  symptoms.yaml, 14 condition YAMLs, red_flags.yaml, drugs.yaml,
            interactions.yaml, diet_templates.yaml. All with source URLs.
 [x] Day 3  Scope guard, red-flag check, symptom extraction + negation,
            evidence engine, sufficiency check.
-[x] Day 4  Follow-up engine, medication safety incl. allergy classes + ADR check.
-[ ] Day 5  RAG corpus + index + retriever, Ollama client, prompts, fallback.
-           (diet/lifestyle generation is DONE, built early on Day 4)
-[ ] Day 6  Consultation API + chat UI, result page, history, PDF export,
-           document upload + confirmation flow, UI polish.
-[ ] Day 7  10 acceptance tests as automated tests, demo rehearsal, final docs.
+[x] Day 4  Follow-up engine, medication safety incl. allergy classes + ADR,
+           diet/lifestyle generation.
+[x] Day 5  RAG corpus + index + retriever, Ollama client, prompts, fallback,
+           medication guidance (three tiers, no prescribing).
+[x] Day 6  Consultation API + chat UI, result page, history, PDF export,
+           document upload + confirmation flow.
+[ ] Day 7  10 acceptance tests as automated pytest, demo rehearsal,
+           README, architecture.md, limitations.
 ```
 
-**CURRENT STATE:** Days 1-4 complete. The whole deterministic reasoning core
-works end to end and is verified. Not yet wired to an HTTP endpoint or the UI.
+**CURRENT STATE:** Days 1-6 complete. The whole system runs end to end in the
+browser and has been driven manually through the full demo script.
+
+Run it with two terminals:
+```
+cd backend && .venv/Scripts/python.exe -m uvicorn main:app --port 8000
+cd frontend && npm run dev            # http://localhost:5173
+```
+Demo logins: rajesh@example.com / priya@example.com / arjun@example.com,
+password `demo123456`.
 
 Verified on the target machine, not estimated:
-- Ollama 0.32.14, model `qwen2.5:3b`, **100% GPU**, 2151/6141 MiB VRAM
-- **~57 tokens/sec warm**, ~46 s cold load. `ollama_keep_alive=30m` in config.py
+- Ollama 0.32.14, `qwen2.5:3b`, 100% GPU, 2151/6141 MiB VRAM
+- ~57 tok/s warm, ~46 s cold load; `ollama_keep_alive=30m` avoids the cold hit
+- one LLM call per assessment, 8-24 s end to end
 
-Knowledge base (all source-cited, all in data/, none in Python):
-- 101 symptom codes / 720 aliases incl. Indian-English, plus an implication
-  graph so "high fever" entails "fever"
-- 14 conditions, 15 red-flag rules, 55 drugs with brand->generic, 52
-  interaction rules, class-based allergy cross-reactivity, 14 diet templates
-- a cross-reference validator runs over the whole set; it caught 4 dangling
-  symptom codes on first run
+Knowledge base (source-cited, all in data/, none in Python):
+- 101 symptoms / 720 aliases + implication graph ("high fever" entails "fever")
+- 14 conditions, 15 red-flag rules + curated screening list, 55 drugs with
+  brand->generic, 52 interactions, class-based allergy cross-reactivity,
+  14 diet templates, 14 treatment-expectation entries
+- 60-file RAG corpus -> 120 chunks, bge-small, NumPy cosine index
+- a cross-reference validator runs over the whole set
 
-Natural-language extraction, measured against 96 labelled real-phrasing cases
-(`data/eval/nl_symptom_cases.yaml`, run `python -m tools.eval_extraction`):
-- baseline 74.0% of cases -> **100% cases, 100% symptom recall, 100% negation,
-  100% duration, 0 forbidden false positives**
+Natural-language extraction (`python -m tools.eval_extraction`, 96 labelled
+cases): baseline 74.0% -> **100% cases, 100% symptom recall, 100% negation,
+100% duration, 0 forbidden false positives**.
 
-Engine-level acceptance tests passing: 1, 2, 3, 4, 5, 7, 8, 9, 10.
-Test 6 (PDF upload) needs Day 6.
+Acceptance tests 1-10 all verified manually. Day 7 turns them into pytest.
 
-**LAST SESSION:** Days 2-4 -- knowledge encoding, all deterministic engines,
-extraction tuning loop.
-**NEXT ACTION:** Day 5 -- RAG corpus + index + retriever, then the Ollama
-client with its template fallback. After that Day 6 wires
-`api/consultation.py` and the chat/result UI, which is what turns the working
-engine into a usable demo.
+Stack deviation: WeasyPrint needs GTK system libraries that are unavailable on
+this Windows machine (confirmed by import failure). Replaced with **fpdf2**,
+pure Python. Record this in the README limitations.
+
+**LAST SESSION:** Days 5-6 -- RAG, LLM layer, medication guidance, the whole
+API surface and UI. Five real bugs found by driving the actual UI (see the
+Day 6 commit messages) rather than by reading code.
+**NEXT ACTION:** Day 7 -- write the 10 acceptance tests as automated pytest,
+rehearse the demo script end to end three times, then README +
+docs/architecture.md + limitations.
 
 Day 2 is unglamorous data entry and everything downstream depends on it. Do not let it be skipped toward more interesting work. If time runs short, drop from 14 conditions to 10 â€” **never reduce the depth of the evidence model**.
 
