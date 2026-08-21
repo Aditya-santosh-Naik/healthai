@@ -158,3 +158,25 @@ red_flags:
     action: Seek medical assessment today. If it is severe, crushing, or comes with sweating or breathlessness, treat it as an emergency.
     source_name: MedlinePlus - Chest pain
     source_url: https://medlineplus.gov/chestpain.html
+
+# Which red flags are worth ASKING about during screening, in priority order.
+#
+# Deliberately excluded: signs so obvious the patient would already have said
+# them (blue lips, seizures, fainting, one-sided weakness, vision loss). Asking
+# about those burns the five-question budget and alarms people for no gain.
+# They still escalate instantly if the patient reports them.
+screening_questions:
+  - shortness_of_breath
+  - chest_pain
+  - severe_abdominal_pain
+  - persistent_vomiting
+  - bleeding_gums
+  - black_stools
+  - blood_in_sputum
+  - bloody_stools
+  - confusion
+  - low_urine_output
+  - stiff_neck
+
+# Screening must not crowd out the questions that actually separate candidates.
+max_safety_questions: 2

@@ -42,10 +42,32 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(profile.router)
 
+# Imported here rather than at module top: these routers import DISCLAIMER
+# from this module, so importing them earlier would be circular.
+from api import consultation, documents, history, reports  # noqa: E402
+
+app.include_router(consultation.router)
+app.include_router(history.router)
+app.include_router(documents.router)
+app.include_router(reports.router)
+
 
 @app.get("/api/health", tags=["meta"])
-def health() -> dict[str, str]:
-    return {"status": "ok", "app": settings.app_name}
+def health() -> dict[str, object]:
+    """Liveness, plus whether the optional pieces are actually up.
+
+    The UI uses ollama_available to warn before a long wait; the app works
+    either way because every LLM surface has a template fallback.
+    """
+    from llm.client import is_available
+    from rag import retriever
+
+    return {
+        "status": "ok",
+        "app": settings.app_name,
+        "ollama_available": is_available(),
+        "rag_index_built": retriever.available(),
+    }
 
 
 @app.get("/api/disclaimer", tags=["meta"])

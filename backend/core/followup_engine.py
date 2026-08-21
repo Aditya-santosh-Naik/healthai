@@ -93,16 +93,26 @@ _INVERTED_OPTIONS = {
 def _pending_safety_questions(
     present: set[str], answered: set[str], candidates: list[CandidateResult]
 ) -> list[str]:
-    """Red-flag screening symptoms relevant to the candidates on the table."""
-    relevant: list[str] = []
+    """Red-flag screening symptoms relevant to the candidates on the table.
+
+    Only symptoms on the curated screening list are asked about, in its
+    priority order. Extreme signs a patient would already have volunteered
+    (blue lips, seizures) are excluded: asking about them burns the
+    five-question budget without adding information. They still escalate
+    instantly if reported.
+    """
+    relevant: set[str] = set()
     for candidate in candidates:
         condition = knowledge.conditions().get(candidate.code)
         if condition is None:
             continue
-        for code in condition.red_flags:
-            if code not in present and code not in answered and code not in relevant:
-                relevant.append(code)
-    return relevant
+        relevant.update(condition.red_flags)
+
+    return [
+        code
+        for code in knowledge.screening_questions()
+        if code in relevant and code not in present and code not in answered
+    ]
 
 
 def _discrimination_value(code: str, candidates: list[CandidateResult]) -> float:
@@ -155,15 +165,20 @@ def next_question(
     answered = present | denied
     pool = candidates[:DISCRIMINATION_POOL]
 
-    # 1. Safety first, always.
-    for code in _pending_safety_questions(present, answered, pool):
-        return Question(
-            symptom_code=code,
-            text=_safety_question(code),
-            options=_INVERTED_OPTIONS.get(code, ["Yes", "No", "Not sure"]),
-            kind="safety",
-            rationale="Screening for a warning sign before going further.",
-        )
+    # 1. Safety first, but capped. Screening must not crowd out the questions
+    #    that actually separate the candidates.
+    safety_asked = len(
+        [c for c in answered if c in set(knowledge.screening_questions())]
+    )
+    if safety_asked < knowledge.max_safety_questions():
+        for code in _pending_safety_questions(present, answered, pool):
+            return Question(
+                symptom_code=code,
+                text=_safety_question(code),
+                options=_INVERTED_OPTIONS.get(code, ["Yes", "No", "Not sure"]),
+                kind="safety",
+                rationale="Screening for a warning sign before going further.",
+            )
 
     # 2. Then the most discriminating unanswered symptom.
     seen: set[str] = set()
