@@ -181,6 +181,19 @@ def red_flags() -> tuple[RedFlag, ...]:
     return tuple(flags)
 
 
+@lru_cache(maxsize=1)
+def screening_questions() -> tuple[str, ...]:
+    """Red-flag symptoms worth asking about, in priority order."""
+    raw = _load_yaml(DATA_DIR / "red_flags.yaml")
+    return tuple(raw.get("screening_questions", []))
+
+
+@lru_cache(maxsize=1)
+def max_safety_questions() -> int:
+    raw = _load_yaml(DATA_DIR / "red_flags.yaml")
+    return int(raw.get("max_safety_questions", 2))
+
+
 # --- drugs ------------------------------------------------------------------
 
 @dataclass(frozen=True)
