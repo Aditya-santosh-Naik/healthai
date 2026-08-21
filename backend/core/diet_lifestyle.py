@@ -103,6 +103,12 @@ def build(
     seen: set[tuple[str, str]] = set()
     templates = knowledge.diet_templates()
 
+    # Allergen filtering applies only where something is being RECOMMENDED.
+    # Applying it to "avoid" items stripped the very warning a patient needed:
+    # an NSAID-allergic patient lost "avoid ibuprofen" because it named her
+    # allergen.
+    recommending = {Category.DIET_PREFER, Category.HYDRATION}
+
     def add(section: str, items: list[dict]) -> None:
         category = SECTION_TO_CATEGORY.get(section)
         if category is None:
@@ -115,7 +121,7 @@ def build(
             if tags & excluded:
                 plan.suppressed_count += 1
                 continue
-            if _allergen_conflict(text, allergens):
+            if category in recommending and _allergen_conflict(text, allergens):
                 plan.suppressed_count += 1
                 continue
             key = (category, text)

@@ -2,23 +2,19 @@
 __pycache__/
 *.py[cod]
 .venv/
-*.egg-info/
-.pytest_cache/
-
-# Database and generated artefacts
-*.db
-*.db-journal
+backend/healthai.db
 backend/uploads/
 backend/reports_out/
+
+# Built artefacts
 data/index.pkl
 
 # Node
 node_modules/
-dist/
-*.local
+frontend/dist/
+*.tsbuildinfo
 
 # Editors / OS
+.DS_Store
 .vscode/
 .idea/
-.DS_Store
-Thumbs.db
