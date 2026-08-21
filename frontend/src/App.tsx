@@ -4,7 +4,9 @@ import Login from "@/pages/Login";
 import Onboarding from "@/pages/Onboarding";
 import Dashboard from "@/pages/Dashboard";
 import Profile from "@/pages/Profile";
-import { ConsultationPage, DocumentsPage, HistoryPage } from "@/pages/Placeholder";
+import Consultation from "@/pages/Consultation";
+import Documents from "@/pages/Documents";
+import { HistoryDetailPage, HistoryList } from "@/pages/History";
 
 function Loading() {
   return (
@@ -57,7 +59,7 @@ function AppRoutes() {
         path="/consultation"
         element={
           <Protected>
-            <ConsultationPage />
+            <Consultation />
           </Protected>
         }
       />
@@ -65,7 +67,15 @@ function AppRoutes() {
         path="/history"
         element={
           <Protected>
-            <HistoryPage />
+            <HistoryList />
+          </Protected>
+        }
+      />
+      <Route
+        path="/history/:id"
+        element={
+          <Protected>
+            <HistoryDetailPage />
           </Protected>
         }
       />
@@ -73,7 +83,7 @@ function AppRoutes() {
         path="/documents"
         element={
           <Protected>
-            <DocumentsPage />
+            <Documents />
           </Protected>
         }
       />

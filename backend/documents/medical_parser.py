@@ -24,6 +24,9 @@ SECTION_HINTS = {
 
 # Conditions worth recognising in a document, beyond the 14 assessable ones.
 CHRONIC_CONDITIONS = [
+    # Longest form first matters: documents write "Type 2 Diabetes Mellitus",
+    # and the matcher keeps the longest name that covers the span.
+    "type 2 diabetes mellitus", "type 1 diabetes mellitus",
     "hypertension", "high blood pressure", "type 2 diabetes", "type 1 diabetes",
     "diabetes mellitus", "diabetes", "asthma", "copd", "hypothyroidism",
     "hyperthyroidism", "chronic kidney disease", "kidney disease",
@@ -55,13 +58,31 @@ def _line_pages(pages: list[str]) -> list[tuple[int, str]]:
 
 
 def _find_conditions(lines: list[tuple[int, str]]) -> list[CandidateFact]:
+    """Longest match wins.
+
+    "Type 2 Diabetes Mellitus" would otherwise also yield "Diabetes Mellitus"
+    and "Diabetes", giving the user three checkboxes for one condition.
+    """
     facts: list[CandidateFact] = []
     seen: set[str] = set()
+    # Longest first so the most specific name claims the span.
+    by_length = sorted(CHRONIC_CONDITIONS, key=len, reverse=True)
+
     for page, line in lines:
         lowered = line.lower()
         in_section = any(h in lowered for h in SECTION_HINTS["condition"])
-        for condition in CHRONIC_CONDITIONS:
-            if condition not in lowered or condition in seen:
+        claimed: list[tuple[int, int]] = []
+
+        for condition in by_length:
+            start = lowered.find(condition)
+            if start < 0:
+                continue
+            end = start + len(condition)
+            # Skip anything overlapping a longer name already matched here.
+            if any(start < c_end and c_start < end for c_start, c_end in claimed):
+                continue
+            claimed.append((start, end))
+            if condition in seen:
                 continue
             seen.add(condition)
             facts.append(

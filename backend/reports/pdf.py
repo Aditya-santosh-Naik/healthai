@@ -67,11 +67,11 @@ class Report(FPDF):
     def title_block(self, title: str, subtitle: str = "") -> None:
         self.set_font("Helvetica", "B", 17)
         self.set_text_color(20, 20, 20)
-        self.multi_cell(0, 8, _clean(title))
+        self.multi_cell(0, 8, _clean(title), new_x="LMARGIN", new_y="NEXT")
         if subtitle:
             self.set_font("Helvetica", "", 10)
             self.set_text_color(110, 110, 110)
-            self.multi_cell(0, 5, _clean(subtitle))
+            self.multi_cell(0, 5, _clean(subtitle), new_x="LMARGIN", new_y="NEXT")
         self.ln(3)
 
     def section(self, heading: str) -> None:
@@ -80,13 +80,13 @@ class Report(FPDF):
         self.ln(3)
         self.set_font("Helvetica", "B", 11)
         self.set_text_color(15, 90, 85)
-        self.multi_cell(0, 6, _clean(heading))
+        self.multi_cell(0, 6, _clean(heading), new_x="LMARGIN", new_y="NEXT")
         self.set_text_color(35, 35, 35)
 
     def body(self, text: str) -> None:
         self.set_font("Helvetica", "", 10)
         self.set_text_color(35, 35, 35)
-        self.multi_cell(0, 5, _clean(text))
+        self.multi_cell(0, 5, _clean(text), new_x="LMARGIN", new_y="NEXT")
         self.ln(1)
 
     def bullets(self, items: list[str]) -> None:
@@ -95,14 +95,14 @@ class Report(FPDF):
         for item in items:
             if self.get_y() > 265:
                 self.add_page()
-            self.multi_cell(0, 5, _clean(f"  -  {item}"))
+            self.multi_cell(0, 5, _clean(f"  -  {item}"), new_x="LMARGIN", new_y="NEXT")
         self.ln(1)
 
     def callout(self, text: str, rgb: tuple[int, int, int]) -> None:
         self.set_fill_color(*rgb)
         self.set_font("Helvetica", "B", 10)
         self.set_text_color(30, 30, 30)
-        self.multi_cell(0, 6, _clean(text), fill=True)
+        self.multi_cell(0, 6, _clean(text), fill=True, new_x="LMARGIN", new_y="NEXT")
         self.ln(2)
 
 
@@ -114,7 +114,7 @@ def _add_candidates(pdf: Report, turn: dict) -> None:
     for candidate in candidates:
         pdf.set_font("Helvetica", "B", 10)
         label = BAND_LABEL.get(candidate.get("band", ""), "Considered")
-        pdf.multi_cell(0, 5, _clean(f"{candidate['display_name']} - {label}"))
+        pdf.multi_cell(0, 5, _clean(f"{candidate['display_name']} - {label}"), new_x="LMARGIN", new_y="NEXT")
         evidence = candidate.get("evidence") or {}
         if evidence.get("supporting"):
             pdf.body("Supported by: " + ", ".join(evidence["supporting"]))
@@ -229,14 +229,18 @@ def build_report(turn: dict, patient_name: str, generated_at: str) -> bytes:
         pdf.set_font("Helvetica", "", 8)
         for source in sources:
             pdf.multi_cell(
-                0, 4, _clean(f"  -  {source.get('name', '')}  {source.get('url', '')}")
+                0,
+                4,
+                _clean(f"  -  {source.get('name', '')}  {source.get('url', '')}"),
+                new_x="LMARGIN",
+                new_y="NEXT",
             )
 
     pdf.ln(4)
     pdf.section("Disclaimer")
     pdf.set_font("Helvetica", "I", 8)
     pdf.set_text_color(90, 90, 90)
-    pdf.multi_cell(0, 4, _clean(DISCLAIMER))
+    pdf.multi_cell(0, 4, _clean(DISCLAIMER), new_x="LMARGIN", new_y="NEXT")
 
     return bytes(pdf.output())
 

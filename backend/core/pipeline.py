@@ -315,8 +315,14 @@ def run(
     passages = retriever.retrieve([c.code for c in shown])
 
     # --- [9] diet and lifestyle ---------------------------------------------
+    # Only the leading candidate drives diet advice. Merging several produced
+    # incoherent output -- a flu patient was told not to skip antimalarial
+    # doses. Generic defaults still fill the gaps inside build().
     diet = diet_lifestyle.build(
-        [c.code for c in shown], facts.diet_type, facts.conditions, facts.allergens
+        [shown[0].code] if shown else [],
+        facts.diet_type,
+        facts.conditions,
+        facts.allergens,
     )
 
     durations = [s.duration_hours for s in symptoms if s.present and s.duration_hours]
