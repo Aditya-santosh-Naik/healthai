@@ -14,7 +14,23 @@ from core.evidence_engine import (
 
 # Below this many positive findings, almost any assessment is a guess.
 MIN_POSITIVE_SYMPTOMS = 3
-MAX_QUESTIONS = 5
+
+# Ceiling on questions per consultation.
+#
+# There is no single published "average number of questions" a clinician asks,
+# so this is not presented as one. What is well established is the SHAPE of a
+# focused acute history -- onset and duration, character, severity, associated
+# symptoms, relevant negatives, and red-flag screening. Covering that properly
+# takes roughly eight to twelve targeted questions, so the ceiling is ten.
+#
+# The ceiling is rarely reached, because of DECISIVE_LEAD below: a clinician
+# stops asking once the picture is clear, and so does this.
+MAX_QUESTIONS = 10
+
+# Stop early when one candidate is this far clear of the runner-up. Continuing
+# to interrogate someone after the evidence has settled is not thoroughness,
+# it is just friction.
+DECISIVE_LEAD = 5
 
 
 @dataclass
@@ -58,6 +74,20 @@ def assess(
 
     ranked = sorted(results, key=lambda r: r.score, reverse=True)
     top = ranked[0]
+
+    # Stop early once the evidence has settled. A clinician does not keep
+    # working through a checklist after the picture is clear, and neither
+    # should this -- the remaining questions would add nothing.
+    lead = top.score - ranked[1].score if len(ranked) > 1 else top.score
+    if top.score >= POSSIBLE_MIN_SCORE and lead >= DECISIVE_LEAD:
+        return Sufficiency(
+            sufficient=True,
+            reason="evidence_decisive",
+            detail=(
+                f"{top.display_name} is clearly better supported than anything "
+                "else, so no further questions were needed."
+            ),
+        )
 
     if top.score < POSSIBLE_MIN_SCORE:
         return Sufficiency(

@@ -241,7 +241,11 @@ Store the full breakdown in `candidate_evidence`. The result page shows *what* s
 Select the unanswered question whose answer maximally separates the current top candidates — a symptom appearing in some candidates' hallmark/supporting lists and absent from others'.
 
 - **Safety questions first.** Any unasked red-flag screening question relevant to reported symptoms precedes discriminating questions.
-- Maximum **5** questions, then force an assessment with whatever evidence exists.
+- Maximum **10** questions, then force an assessment with whatever evidence exists.
+  Revised up from 5: a focused acute history (onset, character, severity,
+  associated symptoms, relevant negatives, red-flag screening) needs roughly
+  eight to twelve targeted questions. The ceiling is rarely reached because
+  the engine **stops early** once one candidate is decisively clear.
 - One question at a time, with tappable options (`Yes` / `No` / `Not sure`, or scales). Never free text where options are possible.
 - Skipped → mark unknown, continue, lower confidence.
 - Never ask something already answered or already in the profile — except to confirm a medication is still being taken.

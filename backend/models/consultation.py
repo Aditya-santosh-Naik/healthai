@@ -82,7 +82,12 @@ class ConsultationSymptom(Base):
     )
     symptom_code: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     # Tri-state: True reported, False explicitly denied, NULL asked-but-unknown.
-    present: Mapped[bool | None] = mapped_column(Boolean, nullable=True, default=True)
+    #
+    # No column default on purpose. SQLAlchemy applies a default when the value
+    # is None, which silently turned every "Not sure" into a reported YES --
+    # and a fabricated "yes" to a red-flag screening question escalated the
+    # consultation. Presence is always passed explicitly.
+    present: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     duration_hours: Mapped[float | None] = mapped_column(Float)
     severity: Mapped[int | None] = mapped_column(Integer)
     onset: Mapped[str | None] = mapped_column(String(64))
