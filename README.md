@@ -276,8 +276,9 @@ Stated plainly, because they matter more than the feature list:
   design.
 - **English only.** Hinglish appears only as aliases in the symptom vocabulary.
 - **No OCR.** Text-layer PDFs only; scanned documents get a clear message.
-- **No encryption at rest.** The SQLite file is unencrypted, and the dev JWT
-  secret is a hardcoded default.
+- **No encryption at rest.** The SQLite file is unencrypted. The JWT signing
+  key is generated on first run and kept out of version control, but it sits
+  in a plain file next to the database.
 - **No DPDP compliance work.** Consent capture, retention policy and data
   export are out of scope.
 - **Herbal and ayurvedic interactions** are not modelled.

@@ -7,7 +7,8 @@ backend/uploads/
 backend/reports_out/
 
 # Built artefacts
-data/index.pkl
+data/index.npz
+backend/.secret_key
 
 # Node
 node_modules/

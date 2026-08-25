@@ -3,8 +3,6 @@
 Past consultations are history, never auto-promoted to medical fact
 (spec section 15).
 """
-import json
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -126,11 +124,11 @@ def get_detail(
             display_name=condition.display_name if condition else row.condition_code,
             band=row.band,
             evidence=EvidenceOut(
-                supporting=json.loads(row.supporting_json),
-                missing=json.loads(row.missing_json),
-                contradictory=json.loads(row.contradictory_json),
+                supporting=row.supporting_json,
+                missing=row.missing_json,
+                contradictory=row.contradictory_json,
             ),
-            context_factors=json.loads(row.context_factors_json),
+            context_factors=row.context_factors_json,
             sources=[dict(s) for s in condition.sources] if condition else [],
         )
 
@@ -144,7 +142,7 @@ def get_detail(
         row
         for row in evidence
         if row.band not in ("most_consistent", "possible")
-        and (json.loads(row.contradictory_json) or json.loads(row.missing_json))
+        and (row.contradictory_json or row.missing_json)
     ]
     ruled_out = [to_candidate(row) for row in dismissed[:3]]
 
