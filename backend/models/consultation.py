@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     DateTime,
     Float,
@@ -110,11 +111,13 @@ class CandidateEvidence(Base):
     )
     condition_code: Mapped[str] = mapped_column(String(64), nullable=False)
     band: Mapped[str] = mapped_column(String(32), nullable=False)
-    supporting_json: Mapped[str] = mapped_column(Text, default="[]")
-    missing_json: Mapped[str] = mapped_column(Text, default="[]")
-    contradictory_json: Mapped[str] = mapped_column(Text, default="[]")
+    # SQLAlchemy's JSON type handles serialisation both ways, so callers pass
+    # and receive real lists instead of json.dumps/loads at every site.
+    supporting_json: Mapped[list] = mapped_column(JSON, default=list)
+    missing_json: Mapped[list] = mapped_column(JSON, default=list)
+    contradictory_json: Mapped[list] = mapped_column(JSON, default=list)
     hallmark_present: Mapped[bool] = mapped_column(Boolean, default=False)
-    context_factors_json: Mapped[str] = mapped_column(Text, default="[]")
+    context_factors_json: Mapped[list] = mapped_column(JSON, default=list)
     internal_score: Mapped[float] = mapped_column(Float, default=0.0)
 
     consultation: Mapped["Consultation"] = relationship(back_populates="evidence")

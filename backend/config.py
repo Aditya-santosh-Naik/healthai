@@ -1,4 +1,5 @@
 """Application configuration. Everything is local; no cloud, no external calls."""
+import secrets
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -13,8 +14,10 @@ REPORT_DIR = BACKEND_DIR / "reports_out"
 class Settings(BaseSettings):
     app_name: str = "HealthAI"
 
-    # Auth. Dev-only secret; noted as a limitation in the README.
-    secret_key: str = "healthai-dev-secret-not-for-production"
+    # Auth. Generated on first run rather than hardcoded -- a constant in the
+    # source is a published credential, so anyone with the repo could forge a
+    # token. Override in production with HEALTHAI_SECRET_KEY.
+    secret_key: str = ""
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24 * 7
 
@@ -37,7 +40,28 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="HEALTHAI_", env_file=".env")
 
 
+SECRET_FILE = BACKEND_DIR / ".secret_key"
+
+
+def _persisted_secret() -> str:
+    """Read the local signing key, generating it on first run.
+
+    Kept out of version control. Rotating it simply invalidates existing
+    sessions, which is the correct behaviour.
+    """
+    if SECRET_FILE.exists():
+        existing = SECRET_FILE.read_text(encoding="utf-8").strip()
+        if existing:
+            return existing
+    generated = secrets.token_urlsafe(48)
+    SECRET_FILE.write_text(generated, encoding="utf-8")
+    return generated
+
+
 settings = Settings()
+
+if not settings.secret_key:
+    settings.secret_key = _persisted_secret()
 
 for _d in (UPLOAD_DIR, REPORT_DIR):
     _d.mkdir(parents=True, exist_ok=True)

@@ -1,23 +1,29 @@
 """Build and load the vector index.
 
-A NumPy matrix pickled to disk, not a vector database. At ~150 chunks, cosine
+A NumPy matrix on disk, not a vector database. At ~150 chunks, cosine
 similarity over a small matrix is a few lines and runs in microseconds; a
 vector DB here would be cargo-culting (spec section 3).
+
+Stored with numpy.savez plus JSON metadata rather than pickle. pickle.load
+executes arbitrary code in the file it reads, so a pickled index is a remote
+code execution primitive if the file is ever replaced. npz + JSON carries data
+only and cannot execute anything.
 
 Build it with:
     .venv/Scripts/python.exe -m rag.index
 """
-import pickle
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+import yaml
 
 from config import DATA_DIR
 
 KNOWLEDGE_DIR = DATA_DIR / "knowledge"
-INDEX_PATH = DATA_DIR / "index.pkl"
+INDEX_PATH = DATA_DIR / "index.npz"
 
 # Chunks are split on markdown H2 headings and never mid-list.
 _FRONT_MATTER = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
@@ -36,15 +42,16 @@ class Chunk:
 
 
 def _parse_front_matter(raw: str) -> tuple[dict[str, str], str]:
+    """Split YAML front matter from the body.
+
+    yaml.safe_load rather than a hand-rolled key: value loop -- it already
+    handles quoting, colons inside values, and type coercion correctly.
+    """
     match = _FRONT_MATTER.match(raw)
     if not match:
         return {}, raw
-    meta: dict[str, str] = {}
-    for line in match.group(1).splitlines():
-        if ":" in line:
-            key, _, value = line.partition(":")
-            meta[key.strip()] = value.strip()
-    return meta, raw[match.end() :]
+    meta = yaml.safe_load(match.group(1)) or {}
+    return {str(k): str(v) for k, v in meta.items()}, raw[match.end() :]
 
 
 def chunk_file(path: Path) -> list[Chunk]:
@@ -111,14 +118,13 @@ def build(verbose: bool = True) -> int:
 
     matrix = embed_passages([c.text for c in chunks])
 
-    # Plain dicts, not dataclass instances: pickling the class ties the file
-    # to the module path it was built from, which breaks when the builder runs
-    # as __main__.
-    with INDEX_PATH.open("wb") as fh:
-        pickle.dump(
-            {"chunks": [vars(c) for c in chunks], "matrix": matrix},
-            fh,
-        )
+    # Metadata as a JSON string inside the npz: data only, no executable
+    # payload, and no dependence on the module path the builder ran from.
+    np.savez_compressed(
+        INDEX_PATH,
+        matrix=matrix,
+        chunks=json.dumps([vars(c) for c in chunks]),
+    )
 
     if verbose:
         conditions = sorted({c.condition for c in chunks})
@@ -133,9 +139,9 @@ def load() -> tuple[list[Chunk], np.ndarray] | None:
     """Load the index, or None if it has not been built."""
     if not INDEX_PATH.exists():
         return None
-    with INDEX_PATH.open("rb") as fh:
-        payload = pickle.load(fh)
-    return [Chunk(**row) for row in payload["chunks"]], payload["matrix"]
+    with np.load(INDEX_PATH, allow_pickle=False) as payload:
+        chunks = [Chunk(**row) for row in json.loads(str(payload["chunks"]))]
+        return chunks, payload["matrix"]
 
 
 if __name__ == "__main__":

@@ -4,11 +4,11 @@ Everything about this module assumes the LLM is optional. If Ollama is down,
 slow, or returns something unusable, the caller falls back to templates and the
 demo continues (invariant 10).
 """
-import json
 import re
-import urllib.error
-import urllib.request
+import time
 from dataclasses import dataclass
+
+import httpx
 
 from config import settings
 
@@ -36,7 +36,10 @@ BANNED_PATTERNS = [
     # Self-attributed diagnostic claims. "Your doctor can confirm the
     # diagnosis" is fine and is deliberately NOT matched here; the system
     # asserting a diagnosis of its own is not.
-    r"\b(?:the|your|this|my)\s+diagnosis\s+is\b",
+    # Any words may sit between the article and the noun: "the most consistent
+    # diagnosis is X" is still the system asserting a diagnosis of its own.
+    r"\bdiagnosis\s+is\b",
+    r"\bdiagnosis\s*:",
     r"\bdiagnosed\s+with\b",
     r"\bI\s+diagnose\b",
     r"\byou\s+have\s+(?:been\s+)?diagnos",
@@ -73,18 +76,13 @@ def check_output(text: str) -> str | None:
 def is_available(timeout: float = 2.0) -> bool:
     """Cheap liveness probe, so the UI can warn before a long wait."""
     try:
-        with urllib.request.urlopen(
-            f"{settings.ollama_url}/api/tags", timeout=timeout
-        ) as response:
-            return response.status == 200
-    except Exception:
+        return httpx.get(f"{settings.ollama_url}/api/tags", timeout=timeout).is_success
+    except httpx.HTTPError:
         return False
 
 
 def generate(system_prompt: str, user_prompt: str) -> LLMResult:
     """One non-streaming completion. Never raises."""
-    import time
-
     payload = {
         "model": settings.ollama_model,
         "system": system_prompt,
@@ -96,51 +94,44 @@ def generate(system_prompt: str, user_prompt: str) -> LLMResult:
             "num_predict": settings.ollama_max_tokens,
         },
     }
-    request = urllib.request.Request(
-        f"{settings.ollama_url}/api/generate",
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-    )
 
     started = time.time()
-    try:
-        with urllib.request.urlopen(
-            request, timeout=settings.ollama_timeout_seconds
-        ) as response:
-            body = json.loads(response.read())
-    except urllib.error.URLError as exc:
+
+    def failed(error: str) -> LLMResult:
         return LLMResult(
-            text="", ok=False, model=settings.ollama_model,
-            error=f"ollama unreachable: {exc.reason}",
-            duration_seconds=time.time() - started,
-        )
-    except TimeoutError:
-        return LLMResult(
-            text="", ok=False, model=settings.ollama_model,
-            error=f"timed out after {settings.ollama_timeout_seconds}s",
-            duration_seconds=time.time() - started,
-        )
-    except Exception as exc:  # noqa: BLE001 - the demo must not die here
-        return LLMResult(
-            text="", ok=False, model=settings.ollama_model,
-            error=f"{type(exc).__name__}: {exc}",
+            text="",
+            ok=False,
+            model=settings.ollama_model,
+            error=error,
             duration_seconds=time.time() - started,
         )
 
-    text = (body.get("response") or "").strip()
-    problem = check_output(text)
-    if problem:
-        return LLMResult(
-            text=text, ok=False, model=settings.ollama_model,
-            error=f"rejected, {problem}",
-            duration_seconds=time.time() - started,
-            eval_tokens=body.get("eval_count", 0) or 0,
+    try:
+        response = httpx.post(
+            f"{settings.ollama_url}/api/generate",
+            json=payload,
+            timeout=settings.ollama_timeout_seconds,
         )
+        response.raise_for_status()
+        body = response.json()
+    except httpx.TimeoutException:
+        return failed(f"timed out after {settings.ollama_timeout_seconds}s")
+    except httpx.HTTPError as exc:
+        # One branch covers connect, read, protocol and status errors; urllib
+        # needed a separate except for each.
+        return failed(f"ollama unreachable: {exc}")
+    except ValueError as exc:
+        return failed(f"malformed response: {exc}")
+
+    text = (body.get("response") or "").strip()
+    tokens = body.get("eval_count") or 0
+    problem = check_output(text)
 
     return LLMResult(
         text=text,
-        ok=True,
+        ok=problem is None,
         model=settings.ollama_model,
+        error=None if problem is None else f"rejected, {problem}",
         duration_seconds=time.time() - started,
-        eval_tokens=body.get("eval_count", 0) or 0,
+        eval_tokens=tokens,
     )

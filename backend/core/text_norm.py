@@ -4,6 +4,7 @@ Both sides of a match must be canonicalised the same way, or the alias
 "blood in phlegm" will never match the sentence "no blood in the phlegm".
 """
 import re
+from functools import lru_cache
 
 # Expanded so negation detection can see the word "not". Aliases are written
 # in the contracted form, so the alias table is expanded to match.
@@ -74,6 +75,7 @@ def canonicalise(text: str) -> str:
     return strip_stopwords(expand_contractions(text.lower()))
 
 
+@lru_cache(maxsize=4096)
 def alias_pattern(alias: str) -> re.Pattern[str]:
     """Regex for a canonical alias.
 

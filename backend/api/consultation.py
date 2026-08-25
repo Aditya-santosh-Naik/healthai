@@ -120,13 +120,11 @@ def _persist_result(db: Session, consultation: Consultation, result) -> None:
                 consultation_id=consultation.id,
                 condition_code=candidate.code,
                 band=candidate.band,
-                supporting_json=json.dumps([e.display for e in candidate.supporting]),
-                missing_json=json.dumps([e.display for e in candidate.missing]),
-                contradictory_json=json.dumps(
-                    [e.display for e in candidate.contradictory]
-                ),
+                supporting_json=[e.display for e in candidate.supporting],
+                missing_json=[e.display for e in candidate.missing],
+                contradictory_json=[e.display for e in candidate.contradictory],
                 hallmark_present=candidate.hallmark_present,
-                context_factors_json=json.dumps(candidate.context_factors),
+                context_factors_json=candidate.context_factors,
                 internal_score=candidate.score,
             )
         )

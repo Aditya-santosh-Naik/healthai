@@ -290,9 +290,14 @@ surviving candidates ──► query built from condition DISPLAY NAMES
 If nothing clears the threshold, the LLM is told so explicitly and the template
 fallback is used rather than letting the model improvise.
 
-The index is a pickled NumPy matrix plus metadata **stored as plain dicts** —
-pickling the dataclass tied the file to the module path it was built from and
-broke on load from a different entry point.
+The index is a NumPy `.npz` archive: the matrix as binary, the chunk metadata
+as a JSON string inside it, loaded with `allow_pickle=False`.
+
+It was originally a pickle. `pickle.load` executes arbitrary code contained in
+the file it reads, so a pickled index is a remote-code-execution primitive the
+moment that file can be replaced. `npz` + JSON carries data only and cannot
+execute anything, and `allow_pickle=False` makes that structural rather than a
+matter of trust.
 
 ---
 
