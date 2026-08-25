@@ -454,3 +454,67 @@ def test_full_answers_reach_a_confident_band(client):
     )
     assert turn["band"] == "most_consistent"
     assert turn["candidates"][0]["code"] == "influenza"
+
+
+# --- question budget --------------------------------------------------------
+
+def test_history_is_long_enough_to_narrow_things_down(client):
+    """A vague opening should get a proper history, not a token 2 questions."""
+    token = make_patient(client, RAJESH)
+    replies = {
+        "shortness_of_breath": "No", "chest_pain": "No", "severe_abdominal_pain": "No",
+        "chills": "Yes", "sweating": "No", "body_ache": "Yes", "dry_cough": "Yes",
+        "fatigue": "Yes", "runny_nose": "No",
+    }
+    turn = run_to_completion(client, token, "I have fever and cough", replies)
+
+    assert turn["outcome"] == "complete"
+    assert turn["questions_asked"] >= 4, (
+        f"only asked {turn['questions_asked']} questions for a vague opening"
+    )
+    assert turn["band"] == "most_consistent", "a full history should reach a verdict"
+
+
+def test_it_stops_early_when_the_evidence_is_already_decisive(client):
+    """A clinician stops asking once the picture is clear. So does this."""
+    token = make_patient(client, RAJESH)
+    turn = start(
+        client,
+        token,
+        "high fever, severe headache, pain behind my eyes, body pain and a rash for 3 days",
+    )
+
+    assert turn["outcome"] == "complete", "a decisive opening should not be interrogated"
+    assert turn["questions_asked"] == 0
+    assert turn["band"] == "most_consistent"
+
+
+def test_question_budget_is_always_bounded(client):
+    """An unhelpful patient must still terminate, honestly."""
+    from core.sufficiency import MAX_QUESTIONS
+
+    token = make_patient(client, RAJESH)
+    turn = start(client, token, "I have a cough and feel tired")
+
+    asked = 0
+    while turn["outcome"] == "needs_question" and asked < MAX_QUESTIONS + 5:
+        turn = answer(client, token, turn, "Not sure")
+        asked += 1
+
+    assert turn["outcome"] == "complete"
+    assert asked <= MAX_QUESTIONS, f"asked {asked}, budget is {MAX_QUESTIONS}"
+    # Nothing was learned, so it must say so rather than invent a verdict.
+    assert turn["band"] == "insufficient_information"
+
+
+def test_questions_read_like_a_person_asked_them(client):
+    """The generic fallback used to emit "Do you have headache?"."""
+    from core import knowledge
+    from core.followup_engine import _phrase
+
+    for code in knowledge.symptoms():
+        text = _phrase(code)
+        assert text.endswith("?"), code
+        # "Do you have headache?" / "Do you have cough?" are the bad shapes.
+        assert not text.startswith("Do you have headache"), code
+        assert not text.startswith("Do you have cough?"), code

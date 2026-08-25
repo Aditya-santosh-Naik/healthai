@@ -40,7 +40,8 @@ Answer the questions:
 - 3 candidates, all `Possible, not established`
 - **No percentage anywhere on the page**
 - Badge order: 2 × `Safety check`, then `Narrowing it down`
-- Counter reads *"Question 1 of 5"* … *"Question 5 of 5"*
+- It asks a proper history (typically 4-8 questions), and **stops early** if
+  your answers already settle it
 
 > **Say in your viva:** *"A naive symptom checker would have printed 'Influenza 73%' here. This one says it cannot tell them apart, because flu and COVID genuinely cannot be separated without a test."*
 

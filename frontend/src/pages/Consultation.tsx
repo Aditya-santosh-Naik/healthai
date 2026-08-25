@@ -196,7 +196,7 @@ export default function Consultation() {
                 {turn.question.kind === "safety" ? "Safety check" : "Narrowing it down"}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                Question {turn.questions_asked} of 5
+                Question {turn.questions_asked}
               </span>
             </div>
             <p className="font-medium">{turn.question.text}</p>

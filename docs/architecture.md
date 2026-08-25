@@ -170,7 +170,7 @@ test asserts it never appears in an API response.
 
 Two-phase selection:
 
-1. **Safety first, capped at two.** Screening questions come from a curated
+1. **Safety first, capped at three.** Screening questions come from a curated
    priority list in `red_flags.yaml`. Extreme signs (blue lips, seizures) are
    deliberately excluded — a patient with blue lips is not typing into a web
    form, and asking burns the question budget. They still escalate instantly if
@@ -181,9 +181,19 @@ Two-phase selection:
    roughly half the pool moves — a question everyone gains from, or nobody
    does, teaches nothing.
 
-Hard cap of five questions, then assess with whatever exists. `Not sure`
-records nothing: an unknown is not a denial, and storing it as one would be a
-silent fabrication.
+Questions are scored by **expected information across both answers**, not by
+the best case. Scoring only the "yes" branch made the engine ask about symptoms
+that are merely contradictory for the runner-up, where answering "no" moves
+nothing -- so half those questions were wasted.
+
+Hard cap of ten questions, sized to a focused acute history rather than to a
+round number, with an early stop once one candidate is decisively clear. A
+clinician does not keep working through a checklist after the picture has
+settled.
+
+`Not sure` records presence as **unknown**, not as a denial. It contributes no
+evidence, but it is remembered -- returning nothing left the symptom
+unanswered and the same question was selected forever.
 
 ---
 

@@ -143,13 +143,22 @@ def answer(client, token: str, turn: dict, reply: str) -> dict:
 
 
 def run_to_completion(client, token: str, text: str, replies: dict[str, str]) -> dict:
-    """Drive a consultation to an outcome, answering from a lookup table."""
+    """Drive a consultation to an outcome, answering from a lookup table.
+
+    The bound follows MAX_QUESTIONS rather than a literal, so raising the
+    question budget does not silently leave consultations unfinished here.
+    """
+    from core.sufficiency import MAX_QUESTIONS
+
     turn = start(client, token, text)
-    for _ in range(6):
+    for _ in range(MAX_QUESTIONS + 1):
         if turn["outcome"] != "needs_question":
             break
         code = turn["question"]["symptom_code"]
         turn = answer(client, token, turn, replies.get(code, "No"))
+    assert turn["outcome"] != "needs_question", (
+        "consultation never finished within the question budget"
+    )
     return turn
 
 

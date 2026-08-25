@@ -178,5 +178,6 @@ screening_questions:
   - low_urine_output
   - stiff_neck
 
-# Screening must not crowd out the questions that actually separate candidates.
-max_safety_questions: 2
+# Screening must not crowd out the questions that actually separate
+# candidates, but with a ten-question budget there is room to be thorough.
+max_safety_questions: 3

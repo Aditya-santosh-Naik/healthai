@@ -71,10 +71,56 @@ def _phrase(code: str) -> str:
         "severe_body_ache": "Are your body aches severe rather than mild?",
         "heartburn": "Do you get a burning feeling in your chest?",
         "upper_abdominal_pain": "Is the pain in the upper part of your stomach?",
+        # The generic "Do you have {symptom}?" fallback reads badly for these.
+        "cough_worse_at_night": "Is your cough worse at night?",
+        "symptoms_worse_lying_down": "Does it get worse when you lie down?",
+        "fever": "Have you had a fever?",
+        "fatigue": "Have you been unusually tired?",
+        "weakness": "Have you felt weak or low on energy?",
+        "malaise": "Have you just felt generally unwell?",
+        "constipation": "Have you been constipated?",
+        "diarrhoea": "Have you had loose motions?",
+        "sweating": "Have you been sweating a lot, or waking up sweaty?",
+        "chills": "Have you had chills or shivering?",
+        "chest_tightness": "Does your chest feel tight or heavy?",
+        "loss_of_appetite": "Has your appetite dropped?",
+        "body_ache": "Do you have body aches?",
+        "muscle_pain": "Are your muscles aching?",
+        "swollen_lymph_nodes": "Are the glands in your neck swollen or tender?",
+        "sputum_discoloured": "Is the phlegm yellow or green?",
+        "runny_nose": "Do you have a runny nose?",
+        "blocked_nose": "Is your nose blocked?",
+        "sneezing": "Have you been sneezing a lot?",
+        "sore_throat": "Do you have a sore throat?",
+        "hoarseness": "Has your voice gone hoarse?",
+        "postnasal_drip": "Does it feel like mucus is dripping down your throat?",
+        "nausea": "Have you felt nauseous?",
+        "vomiting": "Have you been vomiting?",
+        "bloating": "Have you felt bloated or gassy?",
+        "belching": "Have you been burping a lot?",
+        "indigestion": "Have you had indigestion?",
+        "sour_taste": "Do you get a sour taste in your mouth?",
+        "acid_regurgitation": "Does acid or food come back up into your throat?",
+        "early_satiety": "Do you feel full after only a few bites?",
+        "dizziness": "Have you felt dizzy or lightheaded?",
+        "dark_urine": "Has your urine been darker than usual?",
+        "night_sweats": "Have you had night sweats?",
+        "abdominal_pain": "Do you have stomach pain?",
+        "wheezing": "Have you noticed any wheezing?",
+        "rapid_breathing": "Have you been breathing faster than usual?",
+        "itching": "Have you had any itching?",
     }
     if code in special:
         return special[code]
-    return f"Do you have {display}?"
+
+    # Grammatical fallback. "Do you have headache?" reads like a form field;
+    # "Do you have a headache?" reads like a person asking.
+    if " " in display:
+        return f"Have you noticed any {display}?"
+    if display.endswith("s"):
+        return f"Do you have {display}?"
+    article = "an" if display[0] in "aeiou" else "a"
+    return f"Do you have {article} {display}?"
 
 
 def _safety_question(code: str) -> str:
