@@ -95,8 +95,15 @@ function CopyButton({ text }: { text: string }) {
  * warning signs -> what to tell your doctor -> sources -> disclaimer.
  */
 export function ResultView({ turn }: { turn: Turn }) {
-  const { escalation, refusal, candidates, medication_safety, medication_guidance, diet } =
-    turn;
+  const {
+    escalation,
+    refusal,
+    candidates,
+    ruled_out,
+    medication_safety,
+    medication_guidance,
+    diet,
+  } = turn;
 
   // --- refusal: out of scope, nothing else is shown ------------------------
   if (refusal) {
@@ -272,6 +279,38 @@ export function ResultView({ turn }: { turn: Turn }) {
               Separating them needs tests HealthAI cannot run.
             </p>
           )}
+        </Section>
+      )}
+
+      {/* 4b. Considered and set aside.
+          Answers "but couldn't it be a cold?" from the page itself, instead
+          of leaving the user to wonder whether it was looked at. */}
+      {ruled_out && ruled_out.length > 0 && (
+        <Section title="Also considered, and set aside">
+          <p className="text-xs text-muted-foreground">
+            These were checked against your symptoms and did not fit.
+          </p>
+          <ul className="space-y-2">
+            {ruled_out.map((c) => {
+              const against = [
+                ...c.evidence.contradictory.map((x) => `you reported ${x.toLowerCase()}`),
+                ...c.evidence.missing.map(
+                  (x) => `it would usually involve ${x.toLowerCase()}`,
+                ),
+              ];
+              return (
+                <li key={c.code} className="flex gap-2">
+                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-muted-foreground" />
+                  <span>
+                    <span className="font-medium">{c.display_name}</span>
+                    {against.length > 0 && (
+                      <span className="text-muted-foreground"> — {against.join("; ")}</span>
+                    )}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
         </Section>
       )}
 

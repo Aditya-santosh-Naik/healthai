@@ -13,10 +13,22 @@ Rules (spec section 9):
 from dataclasses import dataclass, field
 
 from core import knowledge
-from core.evidence_engine import CandidateResult, HALLMARK_WEIGHT, SUPPORTING_WEIGHT
+from core.evidence_engine import (
+    CONTRADICTORY_PENALTY,
+    EXPECTED_ABSENT_PENALTY,
+    HALLMARK_WEIGHT,
+    SUPPORTING_WEIGHT,
+    CandidateResult,
+)
 
 # How many top candidates the question should try to separate.
 DISCRIMINATION_POOL = 4
+
+# The band is decided by the gap between the leader and the runner-up, so
+# separating those two is the dominant term. General spread across the
+# whole pool is kept only as a tiebreaker.
+LEADER_SEPARATION_WEIGHT = 3.0
+GENERAL_SPREAD_WEIGHT = 0.3
 
 
 @dataclass
@@ -115,39 +127,75 @@ def _pending_safety_questions(
     ]
 
 
-def _discrimination_value(code: str, candidates: list[CandidateResult]) -> float:
-    """How well a yes/no on this symptom would split the candidate pool.
+def _gain(code: str, condition, answered_yes: bool) -> float:
+    """How a candidate's score would move if this symptom were answered.
 
-    Best when roughly half the candidates would gain and the other half would
-    not -- that is the question that actually separates them.
+    The two answers are NOT symmetric, and that asymmetry is the whole point:
+    a contradictory symptom only penalises when it is PRESENT, so answering
+    "no" to it changes nothing. A hallmark, by contrast, moves the score
+    either way -- up if reported, down if explicitly denied.
+    """
+    if answered_yes:
+        if code in condition.hallmark:
+            return float(HALLMARK_WEIGHT)
+        if code in condition.supporting:
+            return float(SUPPORTING_WEIGHT)
+        if code in condition.contradictory:
+            return float(CONTRADICTORY_PENALTY)
+        return 0.0
+
+    # Answered "no". Only a denied hallmark carries evidential weight.
+    if code in condition.hallmark:
+        return float(EXPECTED_ABSENT_PENALTY)
+    return 0.0
+
+
+def _separation(gains: list[float]) -> float:
+    """How far this answer would push the leader away from the runner-up."""
+    return abs(gains[0] - gains[1]) if len(gains) > 1 else 0.0
+
+
+def _spread(gains: list[float]) -> float:
+    """General splitting power across the whole pool, as a tiebreaker."""
+    movers = sum(1 for g in gains if g != 0)
+    if movers == 0 or movers == len(gains):
+        return 0.0
+    balance = 1.0 - abs((movers / len(gains)) - 0.5) * 2
+    return (max(gains) - min(gains)) * (0.5 + balance)
+
+
+def _discrimination_value(code: str, candidates: list[CandidateResult]) -> float:
+    """Expected information from asking about this symptom.
+
+    Scored as the EXPECTED separation across both possible answers, not the
+    best case. Scoring only the "yes" branch made the engine ask about
+    symptoms that are merely contradictory for the runner-up -- a "no" there
+    moves nothing, so half the time the question was wasted and the
+    consultation ended on insufficient_information.
+
+    A symptom that is a hallmark for one leader and not the other separates
+    them whichever way it is answered, and that is what gets picked now.
     """
     if not candidates:
         return 0.0
 
-    gains: list[float] = []
-    for candidate in candidates:
-        condition = knowledge.conditions().get(candidate.code)
-        if condition is None:
-            gains.append(0.0)
-            continue
-        if code in condition.hallmark:
-            gains.append(float(HALLMARK_WEIGHT))
-        elif code in condition.supporting:
-            gains.append(float(SUPPORTING_WEIGHT))
-        elif code in condition.contradictory:
-            gains.append(-3.0)
-        else:
-            gains.append(0.0)
-
-    movers = sum(1 for g in gains if g != 0)
-    if movers == 0 or movers == len(gains):
-        # Tells us nothing: either nobody moves, or everybody moves together.
+    conditions = [knowledge.conditions().get(c.code) for c in candidates]
+    if any(c is None for c in conditions):
         return 0.0
 
-    spread = max(gains) - min(gains)
-    # Balance peaks at 1.0 when exactly half the pool moves.
-    balance = 1.0 - abs((movers / len(gains)) - 0.5) * 2
-    return spread * (0.5 + balance)
+    yes = [_gain(code, c, True) for c in conditions]
+    no = [_gain(code, c, False) for c in conditions]
+
+    if not any(yes) and not any(no):
+        return 0.0
+
+    expected_separation = 0.5 * _separation(yes) + 0.5 * _separation(no)
+    expected_spread = 0.5 * _spread(yes) + 0.5 * _spread(no)
+
+    return (
+        expected_separation * LEADER_SEPARATION_WEIGHT
+        + expected_spread * GENERAL_SPREAD_WEIGHT
+    )
 
 
 def next_question(
@@ -155,14 +203,20 @@ def next_question(
     present: set[str],
     denied: set[str],
     questions_asked: int,
+    unknown: set[str] | None = None,
 ) -> Question | None:
-    """Pick the next question, or None if there is nothing useful left to ask."""
+    """Pick the next question, or None if there is nothing useful left to ask.
+
+    `unknown` holds symptoms that were ASKED and answered "Not sure". They
+    count as answered for selection purposes even though they contribute no
+    evidence -- otherwise the same question is selected forever.
+    """
     from core.sufficiency import MAX_QUESTIONS
 
     if questions_asked >= MAX_QUESTIONS:
         return None
 
-    answered = present | denied
+    answered = present | denied | (unknown or set())
     pool = candidates[:DISCRIMINATION_POOL]
 
     # 1. Safety first, but capped. Screening must not crowd out the questions
@@ -219,8 +273,9 @@ def next_question(
 def apply_answer(question_code: str, answer: str):
     """Map a tapped option onto a symptom observation.
 
-    "Not sure" and skips deliberately produce nothing: an unknown is not a
-    denial, and recording it as one would be a silent fabrication.
+    "Not sure" records presence as None -- asked, but unknown. An unknown is
+    never treated as a denial, which would be a silent fabrication, but it
+    must still be remembered or the question repeats forever.
     """
     from core.symptom_extraction import ExtractedSymptom
 
@@ -236,4 +291,9 @@ def apply_answer(question_code: str, answer: str):
         return ExtractedSymptom(
             code=question_code, present=False, matched_text=f"answered: {answer}"
         )
-    return None
+    # "Not sure" or a skip: record that it was ASKED, with presence unknown.
+    # Returning nothing here meant the symptom stayed unanswered and the same
+    # question was selected again on the next turn.
+    return ExtractedSymptom(
+        code=question_code, present=None, matched_text=f"answered: {answer}"
+    )

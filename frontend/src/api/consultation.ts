@@ -101,7 +101,8 @@ export interface Diet {
 export interface Symptom {
   code: string;
   display: string;
-  present: boolean;
+  /** true reported, false explicitly denied, null asked but unknown. */
+  present: boolean | null;
 }
 
 export interface Turn {
@@ -121,6 +122,8 @@ export interface Turn {
   band: Band | null;
   symptoms: Symptom[];
   candidates: Candidate[];
+  /** Considered and set aside, with the evidence that ruled them out. */
+  ruled_out: Candidate[];
   medication_safety: MedicationSafety | null;
   medication_guidance: MedicationGuidance | null;
   diet: Diet | null;

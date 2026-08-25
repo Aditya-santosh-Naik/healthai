@@ -150,13 +150,15 @@ def parse_severity(text: str) -> int | None:
 @dataclass
 class ExtractedSymptom:
     code: str
-    present: bool
+    # True = reported, False = explicitly denied, None = asked but unknown.
+    # None must never be read as a denial.
+    present: bool | None
     duration_hours: float | None = None
     severity: int | None = None
     matched_text: str = ""
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
-        sign = "+" if self.present else "-"
+        sign = "+" if self.present else ("?" if self.present is None else "-")
         return f"<{sign}{self.code} '{self.matched_text}'>"
 
 
@@ -199,9 +201,10 @@ def extract(text: str) -> list[ExtractedSymptom]:
             if existing is not None:
                 # A negative mention anywhere wins: safer to treat a symptom as
                 # explicitly denied than to assert it on a partial match.
-                if not negated and not existing.present:
+                # `is False` matters -- an unknown must not act like a denial.
+                if not negated and existing.present is False:
                     continue
-                if negated and existing.present:
+                if negated and existing.present is not False:
                     existing.present = False
                 continue
 
@@ -215,11 +218,11 @@ def extract(text: str) -> list[ExtractedSymptom]:
 
     # A specific finding entails its broader parent: "high fever" is a fever.
     # Implications never apply to denials.
-    positive = {code for code, s in found.items() if s.present}
+    positive = {code for code, s in found.items() if s.present is True}
     for implied in knowledge.expand_implied(positive) - set(found):
         parent_of = next(
             (s for s in found.values()
-             if s.present and implied in knowledge.implications().get(s.code, ())),
+             if s.present is True and implied in knowledge.implications().get(s.code, ())),
             None,
         )
         found[implied] = ExtractedSymptom(
@@ -236,6 +239,6 @@ def extract(text: str) -> list[ExtractedSymptom]:
 def summarise(symptoms: list[ExtractedSymptom]) -> dict[str, list[str]]:
     """Human-readable split, used in the 'what to tell your doctor' block."""
     return {
-        "present": [knowledge.display_name(s.code) for s in symptoms if s.present],
-        "denied": [knowledge.display_name(s.code) for s in symptoms if not s.present],
+        "present": [knowledge.display_name(s.code) for s in symptoms if s.present is True],
+        "denied": [knowledge.display_name(s.code) for s in symptoms if s.present is False],
     }

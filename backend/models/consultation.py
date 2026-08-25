@@ -81,7 +81,8 @@ class ConsultationSymptom(Base):
         ForeignKey("consultations.id", ondelete="CASCADE"), nullable=False, index=True
     )
     symptom_code: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
-    present: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Tri-state: True reported, False explicitly denied, NULL asked-but-unknown.
+    present: Mapped[bool | None] = mapped_column(Boolean, nullable=True, default=True)
     duration_hours: Mapped[float | None] = mapped_column(Float)
     severity: Mapped[int | None] = mapped_column(Integer)
     onset: Mapped[str | None] = mapped_column(String(64))

@@ -129,10 +129,16 @@ def score_candidate(
             score += SUPPORTING_WEIGHT
             supporting.append(EvidenceItem(code, knowledge.display_name(code), "supporting"))
 
+    already_missing = {item.symptom_code for item in missing}
     for code in condition.expected:
         if code not in present:
             score += EXPECTED_ABSENT_PENALTY
-            missing.append(EvidenceItem(code, knowledge.display_name(code), "expected_absent"))
+            # A denied hallmark that is also an expected symptom already
+            # appears above; listing it twice reads as "Runny nose, Runny nose".
+            if code not in already_missing:
+                missing.append(
+                    EvidenceItem(code, knowledge.display_name(code), "expected_absent")
+                )
 
     for code in condition.contradictory:
         if code in present:
@@ -207,9 +213,11 @@ def evaluate(
 ) -> tuple[list[CandidateResult], str]:
     """Score all 14 candidates. Returns (ranked results, overall band)."""
     context = context or PatientContext()
-    present = {s.code for s in symptoms if s.present}
-    denied = {s.code for s in symptoms if not s.present}
-    durations = [s.duration_hours for s in symptoms if s.present and s.duration_hours]
+    present = {s.code for s in symptoms if s.present is True}
+    denied = {s.code for s in symptoms if s.present is False}
+    durations = [
+        s.duration_hours for s in symptoms if s.present is True and s.duration_hours
+    ]
     duration_hours = max(durations) if durations else None
 
     results = [
@@ -219,6 +227,25 @@ def evaluate(
     overall = assign_bands(results)
     results.sort(key=lambda r: r.score, reverse=True)
     return results, overall
+
+
+def ruled_out(results: list[CandidateResult], limit: int = 3) -> list[CandidateResult]:
+    """Candidates the engine considered and set aside, with a visible reason.
+
+    Without this the user cannot tell whether an obvious possibility was even
+    looked at. "Why not a common cold?" should be answerable from the page:
+    because the patient denied a runny nose, which a cold expects.
+    """
+    dismissed = [
+        r
+        for r in results
+        if r.score < POSSIBLE_MIN_SCORE and (r.contradictory or r.missing)
+    ]
+    # Highest score first: the NEAR-MISSES are what a patient wonders about.
+    # Ranking by amount of evidence against instead surfaces conditions that
+    # were never plausible (GERD for a cough), which explains nothing.
+    dismissed.sort(key=lambda r: -r.score)
+    return dismissed[:limit]
 
 
 def top_candidates(results: list[CandidateResult], limit: int = 3) -> list[CandidateResult]:

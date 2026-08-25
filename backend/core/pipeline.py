@@ -13,7 +13,13 @@ from typing import Any
 from core import diet_lifestyle, knowledge, medication_guidance, medication_safety
 from core import red_flags as red_flag_check
 from core import scope_guard
-from core.evidence_engine import Band, CandidateResult, evaluate, top_candidates
+from core.evidence_engine import (
+    Band,
+    CandidateResult,
+    evaluate,
+    ruled_out as compute_ruled_out,
+    top_candidates,
+)
 from core.followup_engine import Question, next_question
 from core.patient_context import ProfileFacts
 from core.sufficiency import assess as assess_sufficiency
@@ -58,6 +64,7 @@ class PipelineResult:
     symptoms: list[ExtractedSymptom] = field(default_factory=list)
     candidates: list[CandidateResult] = field(default_factory=list)
     all_candidates: list[CandidateResult] = field(default_factory=list)
+    ruled_out: list[CandidateResult] = field(default_factory=list)
     safety: medication_safety.SafetyReport | None = None
     guidance: medication_guidance.MedicationGuidance | None = None
     diet: diet_lifestyle.GuidancePlan | None = None
@@ -84,14 +91,14 @@ def visible_symptoms(symptoms: list[ExtractedSymptom]) -> list[ExtractedSymptom]
     The evidence engine needs both "high fever" and the "fever" it entails, but
     showing a patient both reads as duplication.
     """
-    present = {s.code for s in symptoms if s.present}
+    present = {s.code for s in symptoms if s.present is True}
     implied_by_others = {
         parent
         for code in present
         for parent in knowledge.implications().get(code, ())
         if parent in present
     }
-    return [s for s in symptoms if not (s.present and s.code in implied_by_others)]
+    return [s for s in symptoms if not (s.present is True and s.code in implied_by_others)]
 
 
 def _duration_text(hours: float | None) -> str:
@@ -116,8 +123,8 @@ def build_doctor_summary(
     Spec section 14 calls this the single most useful output in the product.
     """
     shown = visible_symptoms(symptoms)
-    present = [knowledge.display_name(s.code) for s in shown if s.present]
-    denied = [knowledge.display_name(s.code) for s in shown if not s.present]
+    present = [knowledge.display_name(s.code) for s in shown if s.present is True]
+    denied = [knowledge.display_name(s.code) for s in shown if s.present is False]
 
     lines = [f"{facts.age}-year-old {facts.sex}." if facts.age else ""]
     if present:
@@ -198,10 +205,12 @@ def _assessment_payload(
             for c in candidates
         ],
         "symptoms_present": [
-            knowledge.display_name(s.code) for s in visible_symptoms(symptoms) if s.present
+            knowledge.display_name(s.code)
+            for s in visible_symptoms(symptoms)
+            if s.present is True
         ],
         "symptoms_denied": [
-            knowledge.display_name(s.code) for s in symptoms if not s.present
+            knowledge.display_name(s.code) for s in symptoms if s.present is False
         ],
         "duration_text": _duration_text(duration_hours),
         "next_steps": steps,
@@ -234,7 +243,13 @@ def run(
     merged: dict[str, ExtractedSymptom] = {s.code: s for s in prior_symptoms}
     for symptom in extract(text):
         existing = merged.get(symptom.code)
-        if existing is None or (existing.present and not symptom.present):
+        # Take the new observation when nothing is known yet, when the stored
+        # value is an unknown, or when a stated negative overrides a positive.
+        if (
+            existing is None
+            or existing.present is None
+            or (existing.present is True and symptom.present is False)
+        ):
             merged[symptom.code] = symptom
     symptoms = list(merged.values())
 
@@ -276,16 +291,17 @@ def run(
     # --- [3][4] patient context + evidence ----------------------------------
     context = facts.to_evidence_context()
     all_candidates, band = evaluate(symptoms, context)
-    positive_count = sum(1 for s in symptoms if s.present)
+    positive_count = sum(1 for s in symptoms if s.present is True)
 
     # --- [5] sufficiency ----------------------------------------------------
     sufficiency = assess_sufficiency(all_candidates, band, positive_count, questions_asked)
     if not sufficiency.sufficient:
         question = next_question(
             all_candidates,
-            {s.code for s in symptoms if s.present},
-            {s.code for s in symptoms if not s.present},
-            questions_asked,
+            present={s.code for s in symptoms if s.present is True},
+            denied={s.code for s in symptoms if s.present is False},
+            unknown={s.code for s in symptoms if s.present is None},
+            questions_asked=questions_asked,
         )
         if question is not None:
             return PipelineResult(
@@ -301,7 +317,7 @@ def run(
 
     # --- [7] medication safety ----------------------------------------------
     shown = top_candidates(all_candidates)
-    present_codes = {s.code for s in symptoms if s.present}
+    present_codes = {s.code for s in symptoms if s.present is True}
     safety = medication_safety.evaluate(
         facts.medications, facts.allergies, facts.conditions, present_codes
     )
@@ -325,7 +341,9 @@ def run(
         facts.allergens,
     )
 
-    durations = [s.duration_hours for s in symptoms if s.present and s.duration_hours]
+    durations = [
+        s.duration_hours for s in symptoms if s.present is True and s.duration_hours
+    ]
     duration_hours = max(durations) if durations else None
 
     steps = _next_steps(band, shown, guidance)
@@ -339,6 +357,7 @@ def run(
         symptoms=symptoms,
         candidates=shown,
         all_candidates=all_candidates,
+        ruled_out=compute_ruled_out(all_candidates),
         safety=safety,
         guidance=guidance,
         diet=diet,
