@@ -362,26 +362,26 @@ The **"What to tell your doctor"** block is a short copyable clinical summary â€
 > **Update this section at the end of every session. It is the project's only memory across sessions.**
 
 ```
-[x] Day 1  Ollama verified. Scaffold, full DB schema, JWT auth, profile CRUD,
+[x] Day 1  Ollama verified. Scaffold, DB schema, JWT auth, profile CRUD,
            onboarding wizard, seed script with 3 demo patients.
-[x] Day 2  symptoms.yaml, 14 condition YAMLs, red_flags.yaml, drugs.yaml,
-           interactions.yaml, diet_templates.yaml. All with source URLs.
-[x] Day 3  Scope guard, red-flag check, symptom extraction + negation,
-           evidence engine, sufficiency check.
-[x] Day 4  Follow-up engine, medication safety incl. allergy classes + ADR,
+[x] Day 2  symptoms.yaml, 14 condition YAMLs, red_flags, drugs, interactions,
+           diet_templates. All source-cited.
+[x] Day 3  Scope guard, red-flag check, extraction + negation, evidence
+           engine, sufficiency check.
+[x] Day 4  Follow-up engine, medication safety (allergy classes + ADR),
            diet/lifestyle generation.
 [x] Day 5  RAG corpus + index + retriever, Ollama client, prompts, fallback,
            medication guidance (three tiers, no prescribing).
 [x] Day 6  Consultation API + chat UI, result page, history, PDF export,
            document upload + confirmation flow.
-[ ] Day 7  10 acceptance tests as automated pytest, demo rehearsal,
-           README, architecture.md, limitations.
+[x] Day 7  10 acceptance tests + invariant suite, demo rehearsal, README,
+           architecture.md, limitations.
 ```
 
-**CURRENT STATE:** Days 1-6 complete. The whole system runs end to end in the
-browser and has been driven manually through the full demo script.
+**CURRENT STATE: COMPLETE.** All seven days done. The system runs end to end
+in the browser and the demo script passes as an automated rehearsal.
 
-Run it with two terminals:
+Run it:
 ```
 cd backend && .venv/Scripts/python.exe -m uvicorn main:app --port 8000
 cd frontend && npm run dev            # http://localhost:5173
@@ -389,35 +389,44 @@ cd frontend && npm run dev            # http://localhost:5173
 Demo logins: rajesh@example.com / priya@example.com / arjun@example.com,
 password `demo123456`.
 
-Verified on the target machine, not estimated:
+Verify it:
+```
+cd backend
+.venv/Scripts/python.exe -m pytest -q               # 77 tests
+.venv/Scripts/python.exe -m tools.eval_extraction   # 100% on 4 metrics
+```
+
+Measured on the target machine, not estimated:
 - Ollama 0.32.14, `qwen2.5:3b`, 100% GPU, 2151/6141 MiB VRAM
 - ~57 tok/s warm, ~46 s cold load; `ollama_keep_alive=30m` avoids the cold hit
-- one LLM call per assessment, 8-24 s end to end
+- one LLM call per assessment, 8-24 s end to end; full rehearsal in 23 s
 
 Knowledge base (source-cited, all in data/, none in Python):
-- 101 symptoms / 720 aliases + implication graph ("high fever" entails "fever")
+- 101 symptoms / 720 aliases + implication graph
 - 14 conditions, 15 red-flag rules + curated screening list, 55 drugs with
   brand->generic, 52 interactions, class-based allergy cross-reactivity,
   14 diet templates, 14 treatment-expectation entries
 - 60-file RAG corpus -> 120 chunks, bge-small, NumPy cosine index
-- a cross-reference validator runs over the whole set
 
-Natural-language extraction (`python -m tools.eval_extraction`, 96 labelled
-cases): baseline 74.0% -> **100% cases, 100% symptom recall, 100% negation,
-100% duration, 0 forbidden false positives**.
+Extraction: baseline 74.0% -> 100% cases / 100% symptom recall / 100% negation
+/ 100% duration / 0 false positives, over 96 labelled cases.
 
-Acceptance tests 1-10 all verified manually. Day 7 turns them into pytest.
+Tests: `test_acceptance.py` (the 10 spec cases, 20 assertions),
+`test_invariants.py` (all 12 safety invariants, asserted against real API
+responses), `test_day1_foundation.py` (schema, auth, profile).
 
-Stack deviation: WeasyPrint needs GTK system libraries that are unavailable on
-this Windows machine (confirmed by import failure). Replaced with **fpdf2**,
-pure Python. Record this in the README limitations.
+Stack deviation: WeasyPrint needs GTK libraries unavailable on this Windows
+machine (confirmed by import failure). Replaced with **fpdf2**, pure Python.
+Documented in the README.
 
-**LAST SESSION:** Days 5-6 -- RAG, LLM layer, medication guidance, the whole
-API surface and UI. Five real bugs found by driving the actual UI (see the
-Day 6 commit messages) rather than by reading code.
-**NEXT ACTION:** Day 7 -- write the 10 acceptance tests as automated pytest,
-rehearse the demo script end to end three times, then README +
-docs/architecture.md + limitations.
+**LAST SESSION:** Day 7 -- test suites, docs, demo rehearsal. The rehearsal
+caught that the `no_known_conflict` tier from spec section 10 was never
+rendered; fixed across persistence, history rebuild and UI.
+
+**IF WORK RESUMES,** the honest gaps are: no clinical review of the knowledge
+base, evidence weights are judgement rather than fitted, the 14 conditions are
+a closed world, and the extraction eval set is author-written. Everything else
+in scope is built and tested.
 
 Day 2 is unglamorous data entry and everything downstream depends on it. Do not let it be skipped toward more interesting work. If time runs short, drop from 14 conditions to 10 â€” **never reduce the depth of the evidence model**.
 
