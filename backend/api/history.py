@@ -119,23 +119,34 @@ def get_detail(
     )
     shown = [e for e in evidence if e.band in ("most_consistent", "possible")][:3]
 
-    candidates = []
-    for row in shown:
+    def to_candidate(row) -> CandidateOut:
         condition = knowledge.conditions().get(row.condition_code)
-        candidates.append(
-            CandidateOut(
-                code=row.condition_code,
-                display_name=condition.display_name if condition else row.condition_code,
-                band=row.band,
-                evidence=EvidenceOut(
-                    supporting=json.loads(row.supporting_json),
-                    missing=json.loads(row.missing_json),
-                    contradictory=json.loads(row.contradictory_json),
-                ),
-                context_factors=json.loads(row.context_factors_json),
-                sources=[dict(s) for s in condition.sources] if condition else [],
-            )
+        return CandidateOut(
+            code=row.condition_code,
+            display_name=condition.display_name if condition else row.condition_code,
+            band=row.band,
+            evidence=EvidenceOut(
+                supporting=json.loads(row.supporting_json),
+                missing=json.loads(row.missing_json),
+                contradictory=json.loads(row.contradictory_json),
+            ),
+            context_factors=json.loads(row.context_factors_json),
+            sources=[dict(s) for s in condition.sources] if condition else [],
         )
+
+    candidates = [to_candidate(row) for row in shown]
+
+    # Rebuild the considered-and-set-aside list too, or reopening a
+    # consultation from history silently loses the explanation of why an
+    # obvious alternative was dropped. `evidence` is already ordered by score
+    # descending, so near-misses come first, matching the live view.
+    dismissed = [
+        row
+        for row in evidence
+        if row.band not in ("most_consistent", "possible")
+        and (json.loads(row.contradictory_json) or json.loads(row.missing_json))
+    ]
+    ruled_out = [to_candidate(row) for row in dismissed[:3]]
 
     safety_rows = (
         db.query(MedicationSafetyResult)
@@ -237,6 +248,7 @@ def get_detail(
             for s in symptoms
         ],
         candidates=candidates,
+        ruled_out=ruled_out,
         medication_safety=safety,
         diet=diet,
         sources=sources,
