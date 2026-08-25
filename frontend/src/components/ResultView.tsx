@@ -275,7 +275,45 @@ export function ResultView({ turn }: { turn: Turn }) {
         </Section>
       )}
 
-      {/* 5. Medication safety */}
+      {/* 5. Medication safety.
+          Spec section 10 defines three tiers, and no_known_conflict is one of
+          them. Showing nothing when the check found nothing hides the fact
+          that the check ran at all. */}
+      {medication_safety &&
+        medication_safety.findings.length === 0 &&
+        medication_safety.checked_medicines.length > 0 && (
+          <Section
+            title="Medication safety"
+            icon={<ShieldAlert className="h-4 w-4 text-primary" />}
+          >
+            <div className="rounded-lg border border-primary/30 bg-accent/40 p-3">
+              <div className="mb-1 flex items-center gap-2">
+                <Badge variant="secondary" className="uppercase">
+                  No known conflict
+                </Badge>
+              </div>
+              <p>
+                Your current medicines (
+                {medication_safety.checked_medicines.join(", ")}) were checked
+                against each other, your allergies, your conditions, and the
+                symptoms you reported. Nothing known came up.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                This covers the medicines and interactions in this project's
+                database only. Always tell your doctor or pharmacist everything
+                you take, including anything bought without a prescription.
+              </p>
+            </div>
+            {medication_safety.unrecognised.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Not recognised, so not checked:{" "}
+                {medication_safety.unrecognised.join(", ")}. Ask your pharmacist
+                about these.
+              </p>
+            )}
+          </Section>
+        )}
+
       {medication_safety && medication_safety.findings.length > 0 && (
         <Section
           title="Medication safety"
