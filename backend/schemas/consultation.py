@@ -98,7 +98,9 @@ class DietOut(BaseModel):
 class SymptomOut(BaseModel):
     code: str
     display: str
-    present: bool
+    # Tri-state: True reported, False explicitly denied, None asked-but-unknown
+    # ("Not sure"). None must never be rendered as a denial.
+    present: bool | None
 
 
 class TurnOut(BaseModel):
@@ -120,6 +122,8 @@ class TurnOut(BaseModel):
     band: str | None = None
     symptoms: list[SymptomOut] = []
     candidates: list[CandidateOut] = []
+    # Considered and set aside, with the evidence that ruled them out.
+    ruled_out: list[CandidateOut] = []
     medication_safety: MedicationSafetyOut | None = None
     medication_guidance: MedicationGuidanceOut | None = None
     diet: DietOut | None = None

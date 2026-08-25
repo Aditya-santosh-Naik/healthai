@@ -11,6 +11,7 @@ import pytest
 
 from tests.conftest import (
     NSAID_USER,
+    answer,
     PRIYA,
     RAJESH,
     all_text,
@@ -382,3 +383,74 @@ def test_no_known_conflict_survives_into_history(client):
     assert safety["overall"] == "none"
     assert safety["findings"] == [], "a no-conflict row must not read as a finding"
     assert set(safety["checked_medicines"]) == {"Amlong", "Glycomet"}
+
+
+# --- regressions ------------------------------------------------------------
+
+def test_not_sure_does_not_repeat_the_same_question(client):
+    """Regression: "Not sure" recorded nothing, so the question repeated.
+
+    Answering "Not sure" must mark the symptom asked-but-unknown. It still
+    contributes no evidence, but it must never be selected again.
+    """
+    token = make_patient(client, RAJESH)
+    turn = start(client, token, "I have fever and cough")
+
+    asked: list[str] = []
+    for _ in range(6):
+        if turn["outcome"] != "needs_question":
+            break
+        asked.append(turn["question"]["text"])
+        turn = answer(client, token, turn, "Not sure")
+
+    assert len(asked) == len(set(asked)), f"a question repeated: {asked}"
+    assert len(asked) >= 3, "should keep asking new questions, not stall"
+
+
+def test_not_sure_is_never_treated_as_a_denial(client):
+    """An unknown must not become evidence against anything."""
+    token = make_patient(client, RAJESH)
+    turn = start(client, token, "I have fever and cough")
+    code = turn["question"]["symptom_code"]
+    turn = answer(client, token, turn, "Not sure")
+
+    recorded = {s["code"]: s["present"] for s in turn["symptoms"]}
+    assert recorded.get(code) is not False, (
+        "answering 'Not sure' was recorded as an explicit denial"
+    )
+
+
+def test_ruled_out_explains_why_an_obvious_option_was_dropped(client):
+    """The user should be able to see why a plausible condition was set aside."""
+    token = make_patient(client, RAJESH)
+    turn = run_to_completion(
+        client,
+        token,
+        "fever, cough, chills, dry cough, body ache, no runny nose",
+        {},
+    )
+
+    assert turn["outcome"] == "complete"
+    codes = [c["code"] for c in turn["ruled_out"]]
+    assert "common_cold" in codes, (
+        "denying a runny nose should visibly rule out the common cold"
+    )
+
+    cold = next(c for c in turn["ruled_out"] if c["code"] == "common_cold")
+    evidence = cold["evidence"]["missing"] + cold["evidence"]["contradictory"]
+    assert evidence, "a ruled-out candidate must carry its reason"
+    # And the reason must not read as "Runny nose, Runny nose".
+    assert len(evidence) == len(set(evidence)), f"duplicated evidence: {evidence}"
+
+
+def test_full_answers_reach_a_confident_band(client):
+    """With the questions actually answered, the engine commits to a leader."""
+    token = make_patient(client, RAJESH)
+    turn = run_to_completion(
+        client,
+        token,
+        "fever, cough, chills, dry cough, body ache, no runny nose",
+        {},
+    )
+    assert turn["band"] == "most_consistent"
+    assert turn["candidates"][0]["code"] == "influenza"

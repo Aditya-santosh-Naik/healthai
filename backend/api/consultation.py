@@ -74,7 +74,8 @@ def _load_symptoms(db: Session, consultation_id: int) -> list[ExtractedSymptom]:
     return [
         ExtractedSymptom(
             code=r.symptom_code,
-            present=bool(r.present),
+            # bool(None) is False, which would turn an unknown into a denial.
+            present=None if r.present is None else bool(r.present),
             duration_hours=r.duration_hours,
             severity=r.severity,
             matched_text=r.source,
@@ -248,6 +249,22 @@ def _to_turn(consultation: Consultation, profile: PatientProfile, result) -> Tur
             sources=c.sources,
         )
         for c in result.candidates
+    ]
+
+    turn.ruled_out = [
+        CandidateOut(
+            code=c.code,
+            display_name=c.display_name,
+            band=c.band,
+            evidence=EvidenceOut(
+                supporting=[e.display for e in c.supporting],
+                missing=[e.display for e in c.missing],
+                contradictory=[e.display for e in c.contradictory],
+            ),
+            context_factors=c.context_factors,
+            sources=c.sources,
+        )
+        for c in result.ruled_out
     ]
 
     if result.safety:

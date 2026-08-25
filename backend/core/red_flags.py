@@ -34,7 +34,7 @@ def check(symptoms: list[ExtractedSymptom]) -> Escalation | None:
     Only positively-reported symptoms can trigger a flag. A denied symptom is
     evidence of absence and must never escalate.
     """
-    present = {s.code for s in symptoms if s.present}
+    present = {s.code for s in symptoms if s.present is True}
     if not present:
         return None
 
