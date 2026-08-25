@@ -142,6 +142,19 @@ def _persist_result(db: Session, consultation: Consultation, result) -> None:
                     source_url=finding.source_url,
                 )
             )
+        # Record that the check RAN and found nothing, so history can rebuild
+        # the no-known-conflict state rather than showing an empty section.
+        if not result.safety.findings and result.safety.checked_medicines:
+            db.add(
+                MedicationSafetyResult(
+                    consultation_id=consultation.id,
+                    subject_drug=", ".join(result.safety.checked_medicines),
+                    related_drug_or_condition=None,
+                    severity="none",
+                    reason="No known conflict found for these medicines.",
+                    source_url=None,
+                )
+            )
 
     for passage in result.passages:
         db.add(

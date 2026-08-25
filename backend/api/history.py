@@ -146,8 +146,18 @@ def get_detail(
     if safety_rows:
         order = {"avoid": 2, "caution": 1, "none": 0}
         overall = max((r.severity for r in safety_rows), key=lambda s: order.get(s, 0))
+        # A "none" row is the record that the check ran and found nothing; it
+        # names the medicines checked rather than describing a problem.
+        real = [r for r in safety_rows if r.severity != "none"]
+        checked = [
+            m.strip()
+            for r in safety_rows
+            if r.severity == "none"
+            for m in r.subject_drug.split(",")
+        ]
         safety = MedicationSafetyOut(
             overall=overall,
+            checked_medicines=checked,
             findings=[
                 SafetyFindingOut(
                     subject_drug=r.subject_drug,
@@ -157,7 +167,7 @@ def get_detail(
                     source_url=r.source_url or "",
                     kind="stored",
                 )
-                for r in safety_rows
+                for r in real
             ],
         )
 

@@ -1,119 +1,304 @@
 # HealthAI — Architecture
 
-One process, modular packages. Not microservices: the module boundaries are real, the
-deployment is one FastAPI app.
+Companion to the README. This document explains *why* the system is shaped the
+way it is, for the project report and the viva.
 
 ---
 
-## The pipeline
+## 1. The central design decision
 
-Every consultation turn runs this sequence. Steps 0, 1, 2, 4, 5, 6 and 7 are pure
-deterministic Python with no LLM involvement. **That is the whole point of the project.**
+> **Rules decide. The LLM speaks.**
+
+Every clinical decision — which conditions are candidates, whether the evidence
+is sufficient, what question to ask next, whether a medicine is unsafe, whether
+to escalate — is made by deterministic Python reading source-cited YAML.
+
+The language model is called **once**, at the very end, and is given a
+*completed* assessment to rephrase. It cannot select a condition because it is
+never asked to. It cannot invent a symptom because it never sees the raw user
+message.
+
+This is the answer to "how do you prevent hallucination?" — prevented
+structurally, not by prompt-begging.
+
+---
+
+## 2. Module map
+
+One process, sixteen well-separated modules. Not microservices: at this scale
+that would add operational cost and buy nothing.
 
 ```
-User message
-    |
-    +--> [0] Scope guard      under-18 / pregnancy / mental-health -> refuse + refer, STOP
-    |
-    +--> [1] Red-flag check   emergency pattern -> escalate, STOP
-    |
-    +--> [2] Symptom extraction    vocabulary + aliases + negation + duration/severity
-    |
-    +--> [3] Merge patient context   conditions, allergies, meds, age, prior consults
-    |
-    +--> [4] Evidence engine     score all 14 candidates on structured evidence
-    |
-    +--> [5] Sufficiency check
-    |          insufficient --> [6] Follow-up engine --> return question, await answer
-    |          sufficient   --> continue
-    |
-    +--> [7] Medication safety   drug-drug, drug-allergy, drug-condition, ADR
-    |
-    +--> [8] RAG retrieval       filtered by surviving candidates
-    |
-    +--> [9] Diet + lifestyle    templates filtered by allergies / diet / conditions
-    |
-    +--> [10] LLM call (ONCE)    assessment + passages -> plain language
-    |           on failure --> deterministic template fallback
-    |
-    +--> [11] Persist + audit + render
+                         ┌──────────────────────┐
+                         │  React 18 + Vite     │
+                         │  (Tailwind, shadcn)  │
+                         └──────────┬───────────┘
+                                    │  /api/*  (Vite proxy)
+                         ┌──────────▼───────────┐
+                         │      FastAPI         │
+                         │  api/ auth profile   │
+                         │  consultation history│
+                         │  documents reports   │
+                         └──────────┬───────────┘
+                                    │
+                    ┌───────────────▼────────────────┐
+                    │      core/pipeline.py          │
+                    │  orchestrates steps 0 → 10     │
+                    └───┬────────┬────────┬──────┬───┘
+                        │        │        │      │
+        ┌───────────────▼──┐  ┌──▼─────┐ ┌▼────┐ ┌▼──────────┐
+        │ deterministic    │  │  rag/  │ │ llm/│ │ audit/    │
+        │ core/            │  │        │ │     │ │ logger    │
+        │  scope_guard     │  │embedder│ │client│└───────────┘
+        │  red_flags       │  │index   │ │prompts│
+        │  symptom_extract │  │retriever│ │fallback│
+        │  negation        │  └───┬────┘ └──┬───┘
+        │  evidence_engine │      │         │
+        │  sufficiency     │   index.pkl  Ollama
+        │  followup_engine │   (NumPy)    qwen2.5:3b
+        │  medication_safety│
+        │  medication_guide│
+        │  diet_lifestyle  │
+        │  patient_context │
+        └────────┬─────────┘
+                 │  reads, never hardcodes
+        ┌────────▼─────────┐        ┌──────────────┐
+        │   data/*.yaml    │        │  SQLite      │
+        │   knowledge/*.md │        │  17 tables   │
+        └──────────────────┘        └──────────────┘
 ```
+
+**Nothing below the pipeline calls anything above it.** `core/` has no
+knowledge of HTTP; `api/` has no clinical logic. That separation is what makes
+the engine testable without a database or a server.
+
+---
+
+## 3. The pipeline, step by step
+
+| Step | Module | Deterministic? | What it does |
+|---|---|---|---|
+| 0 | `scope_guard` | ✅ | Refuse under-18 / pregnancy / mental-health crisis |
+| 1 | `red_flags` | ✅ | Escalate and **halt** on any emergency pattern |
+| 2 | `symptom_extraction` + `negation` | ✅ | Text → symptom codes, with stated negatives |
+| 3 | `patient_context` | ✅ | Merge confirmed profile facts |
+| 4 | `evidence_engine` | ✅ | Score all 14 candidates |
+| 5 | `sufficiency` | ✅ | Decide: assess, or ask? |
+| 6 | `followup_engine` | ✅ | Pick the most separating question |
+| 7 | `medication_safety` | ✅ | Four safety checks |
+| 8 | `rag/retriever` | ✅ | Retrieve passages for surviving candidates |
+| 9 | `diet_lifestyle` | ✅ | Filtered per-patient guidance |
+| 10 | `llm/client` | ❌ | Rephrase — the only non-deterministic step |
+| 11 | `api/consultation` | ✅ | Persist, audit, render |
 
 ### Why the order matters
 
-The red-flag check runs *before* symptom reasoning, not after. A pipeline that reasons
-first and checks safety second can talk itself out of escalating. This one cannot: if a
-red flag fires, the function returns before any candidate condition exists.
+**Step 1 runs before step 4 deliberately.** A system that reasons first and
+checks safety afterwards can talk itself out of escalating — it finds a benign
+explanation and stops looking. Running red flags first, on positively-reported
+symptoms only, makes escalation unconditional. When it fires, the function
+returns before a candidate list exists.
+
+**Step 5 is the novel part.** Most symptom-checkers always produce an answer.
+This one has a gate that can refuse, and refusing is a normal outcome rather
+than an error.
 
 ---
 
-## Where the intelligence lives
+## 4. Symptom extraction
 
-| Layer | Decides | Implementation |
-|---|---|---|
-| Scope guard | Whether to engage at all | Rules |
-| Red flags | Whether to escalate | Rules, runs first |
-| Extraction | What the patient said | Vocabulary + aliases + negation |
-| Evidence engine | Which conditions fit | Deterministic scoring |
-| Sufficiency | Whether it knows enough | Threshold on evidence separation |
-| Follow-up | What to ask next | Maximal candidate separation |
-| Medication safety | What is unsafe | Curated tables, class-aware |
-| RAG | What sources say | Cosine similarity, candidate-filtered |
-| **LLM** | **Nothing.** Only wording | One call, strict prompt |
+Rules and a controlled vocabulary, not an LLM. Rules are more reliable for
+negation and are fully inspectable.
 
-The LLM receives a completed structured assessment plus retrieved passages. It never
-selects a condition, never invents a fact, and never sees raw user text for reasoning
-purposes. If it is unavailable, `llm/fallback.py` produces the same structured result
-in plainer language and the demo continues.
+```
+raw text
+  → normalise            lowercase, expand contractions, strip punctuation
+  → strip stopwords      applied to BOTH text and aliases so they line up
+  → split into clauses   on , ; . and but also however
+  → alias match          longest-first, non-overlapping
+  → negation scope       forward scope from cue to clause end
+  → duration / severity  explicit values beat vague relative phrases
+  → implication closure  "high fever" also asserts "fever"
+```
 
----
+Two details that took real work:
 
-## Data model
+**Both sides are canonicalised the same way.** The alias `blood in phlegm` will
+never match `no blood in the phlegm` unless the stopword `the` is stripped from
+the text *and* from the alias table. Contracted aliases (`cant smell`) also get
+an expanded twin (`can not smell`), because negation detection needs the word
+`not` to be visible.
 
-17 tables, structured rather than JSON blobs. The two exceptions —
-`audit_logs.payload_json` and `consultations.llm_raw_output` — are legitimately
-blob-shaped.
-
-The evidence breakdown per candidate is persisted in `candidate_evidence`:
-supporting, missing and contradictory symptoms, whether a hallmark was present, and the
-internal score. **The score is stored for audit and testing and is never rendered.** The
-result page shows *what* supported and contradicted each candidate, never a number.
-
-### Provenance
-
-`provenance` appears on every profile fact: `user_entered`,
-`document_extracted_confirmed`, or `ai_inferred`. Facts extracted from an uploaded PDF
-land in `extracted_facts` with `review_status = pending` and reach the profile only
-after the user confirms them. **AI-inferred data never silently becomes profile truth.**
+**A stated negative is evidence, not absence.** `no ear pain` is stored as
+`present=False`, which is different from a symptom simply not being mentioned.
+The evidence engine penalises a denied hallmark. Acceptance test 3 depends on
+this.
 
 ---
 
-## Stack, and why
+## 5. The evidence engine
 
-| Choice | Reason |
+```
+hallmark present        +3 each
+supporting present      +1 each
+expected absent         −2 each
+contradictory present   −3 each
+context modifier        ±1        (smoker, alcohol, elderly, monsoon, NSAID use)
+duration mismatch       −1
+```
+
+Bands are assigned by comparing the leader to the runner-up, not by absolute
+score alone:
+
+```
+top < 3, or (top − second) ≤ 2   →  insufficient_information
+top ≥ 6 and (top − second) ≥ 3   →  most_consistent
+top ≥ 3                          →  possible
+otherwise                        →  less_consistent
+```
+
+The margin rule is what makes the system honest. Flu and COVID-19 genuinely
+cannot be separated on symptoms alone, so the engine lands on
+`insufficient_information` and says so rather than picking one.
+
+The score is persisted in `candidate_evidence` for audit and testing, and a
+test asserts it never appears in an API response.
+
+---
+
+## 6. The follow-up engine
+
+Two-phase selection:
+
+1. **Safety first, capped at two.** Screening questions come from a curated
+   priority list in `red_flags.yaml`. Extreme signs (blue lips, seizures) are
+   deliberately excluded — a patient with blue lips is not typing into a web
+   form, and asking burns the question budget. They still escalate instantly if
+   reported.
+
+2. **Then maximum separation.** For each unanswered symptom, compute how much
+   the top candidates' scores would diverge on a yes/no. Value peaks when
+   roughly half the pool moves — a question everyone gains from, or nobody
+   does, teaches nothing.
+
+Hard cap of five questions, then assess with whatever exists. `Not sure`
+records nothing: an unknown is not a denial, and storing it as one would be a
+silent fabrication.
+
+---
+
+## 7. Medication safety
+
+The layer with the most clinical value and the most legal sensitivity.
+
+```
+patient's medicines ──► brand → generic resolution
+                              │   ("Dolo 650" → paracetamol)
+                              ▼
+                        component expansion
+                              │   (Combiflam → ibuprofen + paracetamol)
+                              ▼
+        ┌─────────────┬───────┴────────┬──────────────┐
+        ▼             ▼                ▼              ▼
+   drug × drug   drug × allergy   drug × condition   ADR
+                 (BY CLASS)                     (side effect ∩
+                                                 reported symptom)
+```
+
+**Cross-reactivity is by class.** A name-match system fails here: "Penicillin"
+and "Augmentin" share no substring, yet one contraindicates the other. Classes
+are declared in `interactions.yaml`, with `flags_classes` (avoid) separate from
+`also_caution_classes` (caution), so the penicillin→cephalosporin relationship
+is graded rather than binary.
+
+**Component expansion was a real bug.** Combiflam resolves to the generic
+`ibuprofen+paracetamol`, which matched no interaction rule keyed on
+`ibuprofen`. Acceptance tests 5 and 7 silently passed with zero findings until
+components were expanded.
+
+**The ADR check** intersects each medicine's known side effects with the
+reported symptoms. If a patient on Amlodipine reports headache, that is
+surfaced — not as a claim, but as something worth mentioning to their doctor.
+
+---
+
+## 8. What the system will not do
+
+Encoded as invariants and asserted by `tests/test_invariants.py`:
+
+| Invariant | Enforced by |
 |---|---|
-| SQLite | Relational and structured as required. The SQLAlchemy ORM means a Postgres migration needs no code changes. |
-| NumPy + cosine similarity | ~150 documents. Cosine over a small matrix is five lines and microseconds. A vector database here would be cargo-culting. |
-| qwen2.5:3b | The LLM only phrases pre-decided output, so reliability and speed matter more than model quality. Verified at 100% GPU, ~57 tok/s. |
-| One process | The module boundaries are what matter. Splitting into services buys nothing at this scale. |
+| No percentages or probability language | Output filter + regex sweep over real responses |
+| Red flags halt everything | `pipeline.run` returns before candidates exist |
+| The LLM decides nothing clinical | It receives a finished assessment; prompt asserted in tests |
+| Exactly one LLM call | Call counter in tests |
+| Every rule has a source | Test iterates the whole knowledge base |
+| Never reassure | Regex sweep over responses |
+| Never prescribe, never dose | Regex sweep; OTC items must carry a caveat |
+| Never say to stop a medicine | Allowed only inside "do not stop" |
+| Refuse out-of-scope | Four categories tested, crisis outranks physical complaints |
+| Fallback when Ollama is down | The entire suite runs with the LLM stubbed out |
+| Disclaimer everywhere | Asserted on every outcome and in the PDF |
+| Audit every AI output | Asserted against the `audit_logs` table |
 
 ---
 
-## Safety invariants
+## 9. Data provenance
 
-These are correctness requirements, not style preferences. Violating any is a bug.
+The `provenance` enum appears on every profile fact:
 
-1. **No percentages, ever.** Ordinal bands only: `most_consistent`, `possible`,
-   `less_consistent`, `insufficient_information`.
-2. **Red flags short-circuit everything**, before symptom reasoning.
-3. **The LLM never decides anything clinical.**
-4. **Exactly one LLM call per assessment.**
-5. **Every clinical rule carries a source** (`source_name` + `source_url`).
-6. **Never reassure.** When uncertain, escalate.
-7. **Never suggest prescription medication.** Never give a dose for anything.
-8. **Never tell a patient to stop a prescribed medication.**
-9. **Refuse under-18, pregnancy, mental-health crisis** — a kind refusal with a referral
-   is the correct output, and is a feature.
-10. **Ollama-down must not break the demo.**
-11. **Disclaimer on every assessment output and every PDF.**
-12. **Audit-log every AI-generated output.**
+```
+user_entered                    typed by the patient
+document_extracted_confirmed    read from a PDF AND confirmed by the patient
+ai_inferred                     never written to the profile
+```
+
+Extracted facts land in `extracted_facts` with `review_status=pending` and are
+copied to the profile only on explicit confirmation. There is no other code
+path into the profile. This is why acceptance test 6 checks that rejected
+facts leave the profile unchanged.
+
+---
+
+## 10. Retrieval
+
+Filtered retrieval, never open-ended:
+
+```
+surviving candidates ──► query built from condition DISPLAY NAMES
+                              │        (never raw user text)
+                              ▼
+                    mask index to those conditions + general
+                              ▼
+                    cosine similarity (NumPy, 120 × 384)
+                              ▼
+                    top 5 above threshold 0.30
+                              ▼
+                    passages + source URLs → LLM and result page
+```
+
+If nothing clears the threshold, the LLM is told so explicitly and the template
+fallback is used rather than letting the model improvise.
+
+The index is a pickled NumPy matrix plus metadata **stored as plain dicts** —
+pickling the dataclass tied the file to the module path it was built from and
+broke on load from a different entry point.
+
+---
+
+## 11. Known weaknesses
+
+Honest ones, worth raising before an examiner does:
+
+- **The knowledge base is hand-curated and unreviewed.** It encodes published
+  guidance, but no clinician checked the encoding.
+- **Evidence weights are judgement, not data.** +3 for a hallmark is a
+  reasonable choice, not a fitted parameter. With labelled outcome data these
+  could be learned; without it, transparent constants beat false precision.
+- **The 14 conditions are a closed world.** Anything outside is invisible, and
+  the system cannot know what it does not model. It mitigates by escalating on
+  red flags and refusing on thin evidence.
+- **Retrieval quality is bounded by the corpus** — 120 chunks is enough to
+  ground phrasing, not enough to answer arbitrary questions.
+- **The extraction eval set is author-written.** 100% on it means the extractor
+  handles the phrasings anticipated, not all phrasings.

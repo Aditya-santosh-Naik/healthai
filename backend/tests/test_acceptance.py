@@ -349,3 +349,36 @@ def test_10c_nsaid_allergic_patient_still_sees_the_nsaid_warning(client):
     )
     avoid = " ".join(plan.by_category(diet_lifestyle.Category.DIET_AVOID)).lower()
     assert "ibuprofen" in avoid
+
+
+# --- spec section 10: the third output tier ---------------------------------
+
+def test_no_known_conflict_is_shown_not_silently_omitted(client):
+    """Spec section 10 defines three tiers; no_known_conflict is one of them.
+
+    Rendering nothing when the check found nothing hides that it ran at all.
+    """
+    token = make_patient(client, RAJESH)
+    # Amlodipine and Metformin have no known interaction with each other.
+    turn = run_to_completion(client, token, "sore throat and a blocked nose", {})
+
+    safety = turn["medication_safety"]
+    assert safety is not None
+    assert safety["overall"] == "none"
+    assert safety["findings"] == []
+    assert set(safety["checked_medicines"]) == {"Amlong", "Glycomet"}, (
+        "the no-conflict state must still name what was checked"
+    )
+
+
+def test_no_known_conflict_survives_into_history(client):
+    """History rebuilds from stored rows, so the tier must be persisted."""
+    token = make_patient(client, RAJESH)
+    turn = run_to_completion(client, token, "sore throat and a blocked nose", {})
+
+    r = client.get(f"/api/history/{turn['consultation_id']}", headers=auth(token))
+    assert r.status_code == 200
+    safety = r.json()["medication_safety"]
+    assert safety["overall"] == "none"
+    assert safety["findings"] == [], "a no-conflict row must not read as a finding"
+    assert set(safety["checked_medicines"]) == {"Amlong", "Glycomet"}
