@@ -6,7 +6,8 @@ lists and is absent from others'.
 
 Rules (spec section 9):
   - Safety questions first, before any discriminating question.
-  - Maximum 5 questions, then force an assessment.
+  - Maximum questions capped by sufficiency.MAX_QUESTIONS, with an early
+    stop once one candidate is decisively clear.
   - One question at a time, with tappable options. Never free text.
   - Never re-ask something already answered.
 """
@@ -73,7 +74,6 @@ def _phrase(code: str) -> str:
         "upper_abdominal_pain": "Is the pain in the upper part of your stomach?",
         # The generic "Do you have {symptom}?" fallback reads badly for these.
         "cough_worse_at_night": "Is your cough worse at night?",
-        "symptoms_worse_lying_down": "Does it get worse when you lie down?",
         "fever": "Have you had a fever?",
         "fatigue": "Have you been unusually tired?",
         "weakness": "Have you felt weak or low on energy?",
@@ -81,13 +81,11 @@ def _phrase(code: str) -> str:
         "constipation": "Have you been constipated?",
         "diarrhoea": "Have you had loose motions?",
         "sweating": "Have you been sweating a lot, or waking up sweaty?",
-        "chills": "Have you had chills or shivering?",
         "chest_tightness": "Does your chest feel tight or heavy?",
         "loss_of_appetite": "Has your appetite dropped?",
         "body_ache": "Do you have body aches?",
         "muscle_pain": "Are your muscles aching?",
         "swollen_lymph_nodes": "Are the glands in your neck swollen or tender?",
-        "sputum_discoloured": "Is the phlegm yellow or green?",
         "runny_nose": "Do you have a runny nose?",
         "blocked_nose": "Is your nose blocked?",
         "sneezing": "Have you been sneezing a lot?",

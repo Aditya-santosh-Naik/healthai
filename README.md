@@ -172,7 +172,7 @@ course. That routing is health information, not a prescription.
 
 ```bash
 cd backend
-.venv/Scripts/python.exe -m pytest -q                    # 75 tests
+.venv/Scripts/python.exe -m pytest -q                    # 86 tests
 .venv/Scripts/python.exe -m tools.eval_extraction        # NL accuracy
 ```
 
@@ -250,10 +250,15 @@ the same artefact. This is the only stack change.
 candidates produced incoherent advice — a flu patient was told not to skip
 antimalarial doses. Generic defaults still fill the gaps.
 
-**Safety screening is capped at two questions.** Screening every red flag of
-every candidate burned the five-question budget before any discriminating
-question ran. The screening list is curated and prioritised in
-`red_flags.yaml`; extreme signs still escalate instantly if reported.
+**Safety screening is capped at three questions.** Screening every red flag of
+every candidate burned the whole budget before any discriminating question
+ran. The screening list is curated and prioritised in `red_flags.yaml`;
+extreme signs still escalate instantly if reported.
+
+**Ten questions, not five.** The original spec said five, which was too thin
+to narrow anything down. Ten is sized to the shape of a focused acute history
+rather than to a round number, and it is rarely reached because the engine
+stops as soon as one candidate is decisively clear.
 
 ---
 

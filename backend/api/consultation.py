@@ -188,7 +188,7 @@ def _to_turn(consultation: Consultation, profile: PatientProfile, result) -> Tur
         narrative=result.narrative,
         disclaimer=DISCLAIMER,
         # The consultation row is authoritative: the pipeline's copy is the
-        # pre-increment value, which rendered as "Question 0 of 5".
+        # pre-increment value, which rendered as "Question 0".
         questions_asked=consultation.questions_asked,
         sufficiency_reason=result.sufficiency_reason,
         used_fallback=result.used_fallback,

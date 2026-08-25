@@ -518,3 +518,18 @@ def test_questions_read_like_a_person_asked_them(client):
         # "Do you have headache?" / "Do you have cough?" are the bad shapes.
         assert not text.startswith("Do you have headache"), code
         assert not text.startswith("Do you have cough?"), code
+
+
+def test_ruled_out_survives_into_history(client):
+    """Reopening a consultation must not lose the "why not X?" explanation."""
+    token = make_patient(client, RAJESH)
+    turn = run_to_completion(
+        client, token, "fever, cough, chills, dry cough, body ache, no runny nose", {}
+    )
+    assert turn["ruled_out"], "live result should carry ruled-out candidates"
+
+    r = client.get(f"/api/history/{turn['consultation_id']}", headers=auth(token))
+    assert r.status_code == 200
+    stored = r.json()["ruled_out"]
+    assert stored, "history lost the ruled-out candidates"
+    assert {c["code"] for c in stored} == {c["code"] for c in turn["ruled_out"]}
