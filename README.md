@@ -25,36 +25,76 @@ wrapper around it.
 
 ---
 
-## Running it
+## Running it on Windows
 
-**Prerequisites:** Python 3.11+, Node 18+, and [Ollama](https://ollama.com)
-with the model pulled:
+### 1. Install the three prerequisites
+
+| | Version | Where |
+|---|---|---|
+| **Python** | 3.11 or newer | [python.org](https://www.python.org/downloads/) — **tick "Add python.exe to PATH"** on the first screen |
+| **Node** | 18 or newer | [nodejs.org](https://nodejs.org) — the LTS installer |
+| **Ollama** | any | [ollama.com](https://ollama.com) — optional, see below |
+
+Check they are visible to the terminal:
+
+```bash
+python --version && node --version && ollama --version
+```
+
+Ollama is optional. Without it the app still runs end to end — every AI surface
+has a deterministic fallback — but the final wording comes from templates
+instead of the model. With it, pull the model once (~2 GB):
 
 ```bash
 ollama pull qwen2.5:3b
 ```
 
-**Backend** (first run creates the database and downloads the embedding model,
-~130 MB, once):
+### 2. Enable Long Path support (one time, needs admin)
+
+PyTorch ships header files with paths longer than Windows' default 260-character
+limit, so `pip install` **fails part-way through** without this. Open PowerShell
+**as Administrator** and run:
 
 ```bash
-cd backend
-python -m venv .venv
-.venv/Scripts/python.exe -m pip install -r requirements.txt
-.venv/Scripts/python.exe seed.py            # 3 demo patients
-.venv/Scripts/python.exe -m rag.index       # build the vector index
-.venv/Scripts/python.exe -m uvicorn main:app --port 8000
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name LongPathsEnabled -Value 1 -PropertyType DWORD -Force
 ```
 
-**Frontend:**
+Then **restart the terminal**. Skip this only if you clone to a short path such
+as `C:\healthai`, and even then it is safer to just enable it.
+
+### 3. Clone and set up
 
 ```bash
-cd frontend
-npm install
-npm run dev            # http://localhost:5173
+git clone https://github.com/Aditya-santosh-Naik/healthai.git
 ```
 
-**Demo logins** — password `demo123456` for all three:
+```bash
+cd healthai && powershell -ExecutionPolicy Bypass -File setup.ps1
+```
+
+`setup.ps1` creates the virtual environment, installs both dependency sets,
+seeds the demo database and builds the vector index. First run downloads about
+700 MB of Python packages plus a 130 MB embedding model, so give it ten minutes
+on a normal connection. It is safe to re-run at any time.
+
+### 4. Start the two servers
+
+Two terminals, both from the project root:
+
+```bash
+cd backend && .venv\Scripts\python.exe -m uvicorn main:app --port 8000
+```
+
+```bash
+cd frontend && npm run dev
+```
+
+Open **http://localhost:5173**.
+
+### 5. Log in
+
+Password `demo123456` for all three. They are deliberately different so the same
+symptoms produce visibly different medication and diet output:
 
 | Email | Profile |
 |---|---|
@@ -62,8 +102,84 @@ npm run dev            # http://localhost:5173
 | `priya@example.com` | 29F, GERD, Pantoprazole, NSAID allergy, vegetarian |
 | `arjun@example.com` | 35M, vegan, smoker, self-medicating with Combiflam |
 
-Check `GET /api/health` — it reports whether Ollama and the vector index are up.
-The app works either way; every LLM surface has a deterministic fallback.
+`GET /api/health` reports whether Ollama and the vector index are up.
+
+---
+
+## Troubleshooting
+
+**`pip install` dies on a long filename, or a `predicated_tile_access_iterator`
+header.** Long Path support is off — do step 2 above, then re-run `setup.ps1`.
+
+**`OSError: [WinError 4551] An Application Control policy has blocked this
+file`, mentioning `torch_global_deps.dll`.** Windows **Smart App Control** is
+blocking PyTorch's unsigned DLLs. It is a consumer feature that is not intended
+for development machines, and it has no exclusion list. Turn it off in Windows
+Security → App & browser control → Smart App Control → Off. **This is permanent
+— Windows will not let you switch it back on without resetting the PC.** Check
+its state with:
+
+```bash
+Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy" -Name VerifiedAndReputablePolicyState
+```
+
+`1` means enforced, `0` means off.
+
+**`python` opens the Microsoft Store.** The PATH entry is missing. Re-run the
+Python installer, choose Modify, and tick "Add python.exe to PATH".
+
+**Port 8000 or 5173 already in use.** Find and stop the process:
+
+```bash
+netstat -ano | findstr :8000
+```
+
+**The result page says the AI service is unavailable.** Ollama is not running.
+Start it, or ignore it — the deterministic fallback still produces a full
+assessment.
+
+---
+
+## Running it on macOS or Linux
+
+Same steps, but use `setup.sh` and the `bin/` paths:
+
+```bash
+git clone https://github.com/Aditya-santosh-Naik/healthai.git && cd healthai && bash setup.sh
+```
+
+```bash
+cd backend && .venv/bin/python -m uvicorn main:app --port 8000
+```
+
+```bash
+cd frontend && npm run dev
+```
+
+On Linux the default PyPI PyTorch wheel bundles CUDA and is several GB;
+`setup.sh` pulls the CPU wheel instead, since the embedder runs on CPU.
+
+---
+
+## Manual setup
+
+If you would rather not run the script, or a step failed and you want to see
+where:
+
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe seed.py            # 3 demo patients
+.venv\Scripts\python.exe -m rag.index       # build the vector index
+.venv\Scripts\python.exe -m uvicorn main:app --port 8000
+```
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ---
 
