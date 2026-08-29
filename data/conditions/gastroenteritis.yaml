@@ -1,5 +1,9 @@
 code: gastroenteritis
 display_name: Gastroenteritis (Stomach Flu)
+base_rate: very_common
+base_rate_source: author judgement
+base_rate_note: >-
+  Leading cause of acute diarrhoeal presentation in India across all age groups.
 sources:
   - name: MedlinePlus - Gastroenteritis
     url: https://medlineplus.gov/gastroenteritis.html

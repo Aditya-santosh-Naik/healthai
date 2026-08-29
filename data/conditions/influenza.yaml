@@ -1,5 +1,9 @@
 code: influenza
 display_name: Influenza (Flu)
+base_rate: common
+base_rate_source: author judgement
+base_rate_note: >-
+  Seasonal and genuinely common, but an order of magnitude rarer than the common cold.
 sources:
   - name: MedlinePlus - Flu
     url: https://medlineplus.gov/flu.html

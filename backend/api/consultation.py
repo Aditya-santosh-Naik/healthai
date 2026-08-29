@@ -126,6 +126,23 @@ def _persist_result(db: Session, consultation: Consultation, result) -> None:
                 hallmark_present=candidate.hallmark_present,
                 context_factors_json=candidate.context_factors,
                 internal_score=candidate.score,
+                scoring_json={
+                    "base_rate": candidate.base_rate,
+                    "base_rate_contribution": round(candidate.base_rate_contribution, 4),
+                    "contributions": [
+                        {
+                            "code": item.symptom_code,
+                            "kind": item.kind,
+                            "weight": round(item.weight, 4),
+                            "contribution": round(item.contribution, 4),
+                        }
+                        for item in (
+                            *candidate.supporting,
+                            *candidate.missing,
+                            *candidate.contradictory,
+                        )
+                    ],
+                },
             )
         )
 

@@ -1,5 +1,9 @@
 code: gerd
 display_name: GERD (Acid Reflux)
+base_rate: very_common
+base_rate_source: author judgement
+base_rate_note: >-
+  High and rising prevalence in Indian urban adults; a routine cause of chest and epigastric burning.
 sources:
   - name: MedlinePlus - GERD
     url: https://medlineplus.gov/gerd.html

@@ -17,7 +17,7 @@ Scoring (spec section 7):
 """
 from dataclasses import dataclass, field
 
-from core import knowledge
+from core import knowledge, specificity
 from core.symptom_extraction import ExtractedSymptom
 
 HALLMARK_WEIGHT = 3
@@ -27,11 +27,49 @@ CONTRADICTORY_PENALTY = -3
 CONTEXT_WEIGHT = 1
 DURATION_MISMATCH_PENALTY = -1
 
-# Band thresholds.
-MOST_CONSISTENT_MIN_SCORE = 6
-MOST_CONSISTENT_MIN_LEAD = 3
-POSSIBLE_MIN_SCORE = 3
-AMBIGUOUS_LEAD = 2
+# Prevalence prior, in the same units as the evidence terms. A cold is not more
+# likely than dengue because its symptoms fit better -- it is more likely
+# before either is examined, and the old engine had no way to say so.
+#
+# These are ordinal tiers, not probabilities, and they are deliberately small
+# enough that specific evidence overrides them: dengue starts 4 points behind a
+# cold and still wins outright on retro-orbital pain plus severe body ache.
+# Tiers live in each condition's YAML as `base_rate`, with the reasoning in
+# `base_rate_note`. All fourteen are author judgement -- see the README
+# limitations section.
+BASE_RATE_PRIOR = {
+    "very_common": 4.0,
+    "common": 2.0,
+    "uncommon": 0.0,
+    "rare": -3.0,
+}
+
+# Band thresholds, recalibrated for the scoring above. The previous values
+# (6 / 3 / 3 / 2) assumed a range with no prior in it and no specificity
+# multiplier; carrying them over unchanged would have made almost everything
+# `most_consistent`, replacing over-diagnosis with over-confidence.
+#
+# Measured over all 96 eval cases with the new scoring:
+#
+#   TOP score per case      p25  2.49   p50  6.04   p75 11.30   p85 13.94   p90 15.53
+#   LEAD over runner-up     p25  0.49   p50  2.00   p70  4.00   p80  6.00   p85  8.00
+#
+# POSSIBLE_MIN_SCORE is not read off that table. It is anchored: it must be
+# strictly greater than the largest base rate prior (very_common = 4.0), or a
+# cold would qualify as "possible" on prevalence alone with no evidence at all.
+# 6.0 is the smallest round value that clears it with real evidence to spare,
+# and it happens to land on the median top score.
+POSSIBLE_MIN_SCORE = 6.0
+
+# p85 of top scores and p80 of leads. Reserves the strongest band for roughly
+# the top sixth of cases -- appropriate for a system whose claim is that it
+# declines to be certain rather than that it usually is.
+MOST_CONSISTENT_MIN_SCORE = 14.0
+MOST_CONSISTENT_MIN_LEAD = 6.0
+
+# p70 of leads. Below this the top two candidates are not meaningfully
+# separated, so the honest outcome is to say so rather than to rank them.
+AMBIGUOUS_LEAD = 4.0
 
 
 class Band:
@@ -48,6 +86,10 @@ class EvidenceItem:
     symptom_code: str
     display: str
     kind: str  # hallmark | supporting | expected_absent | contradictory | context | duration
+    # Audit trail. Never rendered -- these exist so a ranking can be explained
+    # after the fact, and so a test can assert WHY something ranked where it did.
+    weight: float = 1.0
+    contribution: float = 0.0
 
 
 @dataclass
@@ -57,6 +99,8 @@ class CandidateResult:
     score: float
     band: str
     hallmark_present: bool
+    base_rate: str = "uncommon"
+    base_rate_contribution: float = 0.0
     supporting: list[EvidenceItem] = field(default_factory=list)
     missing: list[EvidenceItem] = field(default_factory=list)
     contradictory: list[EvidenceItem] = field(default_factory=list)
@@ -107,45 +151,57 @@ def score_candidate(
     duration_hours: float | None,
     context: PatientContext,
 ) -> CandidateResult:
-    score = 0.0
+    # Every candidate starts at its prevalence prior rather than at zero.
+    base_rate_contribution = BASE_RATE_PRIOR.get(condition.base_rate, 0.0)
+    score = base_rate_contribution
+
     supporting: list[EvidenceItem] = []
     missing: list[EvidenceItem] = []
     contradictory: list[EvidenceItem] = []
     context_factors: list[str] = []
     hallmark_present = False
 
+    def item(code: str, kind: str, raw: float) -> EvidenceItem:
+        """Scale one piece of evidence by how much that symptom discriminates.
+
+        A hallmark that half the knowledge base also claims is worth less than
+        a hallmark unique to this condition, in both directions: the same
+        scaling applies to penalties, so failing to report a highly specific
+        expected symptom counts against the condition more than failing to
+        report a generic one.
+        """
+        nonlocal score
+        weight = specificity.weight_for(code)
+        contribution = raw * weight
+        score += contribution
+        return EvidenceItem(
+            code, knowledge.display_name(code), kind, weight, contribution
+        )
+
     for code in condition.hallmark:
         if code in present:
-            score += HALLMARK_WEIGHT
             hallmark_present = True
-            supporting.append(EvidenceItem(code, knowledge.display_name(code), "hallmark"))
+            supporting.append(item(code, "hallmark", HALLMARK_WEIGHT))
         elif code in denied:
             # An explicitly denied hallmark is real evidence against.
-            score += EXPECTED_ABSENT_PENALTY
-            missing.append(EvidenceItem(code, knowledge.display_name(code), "expected_absent"))
+            missing.append(item(code, "expected_absent", EXPECTED_ABSENT_PENALTY))
 
     for code in condition.supporting:
         if code in present:
-            score += SUPPORTING_WEIGHT
-            supporting.append(EvidenceItem(code, knowledge.display_name(code), "supporting"))
+            supporting.append(item(code, "supporting", SUPPORTING_WEIGHT))
 
-    already_missing = {item.symptom_code for item in missing}
+    already_missing = {entry.symptom_code for entry in missing}
     for code in condition.expected:
         if code not in present:
-            score += EXPECTED_ABSENT_PENALTY
+            entry = item(code, "expected_absent", EXPECTED_ABSENT_PENALTY)
             # A denied hallmark that is also an expected symptom already
             # appears above; listing it twice reads as "Runny nose, Runny nose".
             if code not in already_missing:
-                missing.append(
-                    EvidenceItem(code, knowledge.display_name(code), "expected_absent")
-                )
+                missing.append(entry)
 
     for code in condition.contradictory:
         if code in present:
-            score += CONTRADICTORY_PENALTY
-            contradictory.append(
-                EvidenceItem(code, knowledge.display_name(code), "contradictory")
-            )
+            contradictory.append(item(code, "contradictory", CONTRADICTORY_PENALTY))
 
     for modifier in condition.context_modifiers:
         factor = modifier.get("factor", "")
@@ -167,6 +223,8 @@ def score_candidate(
         score=score,
         band=Band.LESS_CONSISTENT,
         hallmark_present=hallmark_present,
+        base_rate=condition.base_rate,
+        base_rate_contribution=base_rate_contribution,
         supporting=supporting,
         missing=missing,
         contradictory=contradictory,

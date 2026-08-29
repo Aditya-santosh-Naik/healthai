@@ -1,5 +1,9 @@
 code: typhoid
 display_name: Typhoid Fever
+base_rate: uncommon
+base_rate_source: author judgement
+base_rate_note: >-
+  Endemic in India and materially more likely than in high-income settings, but uncommon per febrile episode.
 sources:
   - name: WHO - Typhoid
     url: https://www.who.int/news-room/fact-sheets/detail/typhoid

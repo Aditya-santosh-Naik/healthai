@@ -1,5 +1,9 @@
 code: acute_bronchitis
 display_name: Acute Bronchitis
+base_rate: common
+base_rate_source: author judgement
+base_rate_note: >-
+  Frequent sequel to upper respiratory infection, especially in smokers and polluted cities.
 sources:
   - name: MedlinePlus - Acute Bronchitis
     url: https://medlineplus.gov/acutebronchitis.html

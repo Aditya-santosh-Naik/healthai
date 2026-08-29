@@ -108,6 +108,11 @@ def display_name(code: str) -> str:
 class Condition:
     code: str
     display_name: str
+    # Prevalence tier, not a probability. Names a band in
+    # evidence_engine.BASE_RATE_PRIOR rather than carrying a number, so the
+    # weights stay in one place and the YAML stays readable.
+    base_rate: str
+    base_rate_source: str
     sources: tuple[dict[str, str], ...]
     hallmark: tuple[str, ...]
     supporting: tuple[str, ...]
@@ -132,6 +137,8 @@ def conditions() -> dict[str, Condition]:
         out[raw["code"]] = Condition(
             code=raw["code"],
             display_name=raw["display_name"],
+            base_rate=raw["base_rate"],
+            base_rate_source=raw["base_rate_source"],
             sources=tuple(raw.get("sources", [])),
             hallmark=tuple(raw.get("hallmark_symptoms", [])),
             supporting=tuple(raw.get("supporting_symptoms", [])),

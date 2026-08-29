@@ -1,5 +1,9 @@
 code: food_poisoning
 display_name: Food Poisoning
+base_rate: very_common
+base_rate_source: author judgement
+base_rate_note: >-
+  Foodborne illness is common year-round and under-reported because most cases self-resolve.
 sources:
   - name: MedlinePlus - Foodborne Illness
     url: https://medlineplus.gov/foodborneillness.html
@@ -7,7 +11,13 @@ sources:
     url: https://www.who.int/news-room/fact-sheets/detail/food-safety
 hallmark_symptoms: [vomiting, diarrhoea, abdominal_cramps, outside_food]
 supporting_symptoms: [nausea, abdominal_pain, weakness, low_grade_fever, watery_diarrhoea, loss_of_appetite, sweating]
-expected_symptoms: []
+# Food poisoning is defined by the exposure, not just the symptoms. Without a
+# food history it is indistinguishable from gastroenteritis on presentation --
+# which is exactly what happened: both scored 11.75 on "loose motions 2 days,
+# stomach ache" and tied. Listing the exposure as expected lets its absence
+# count against this condition, so the more general diagnosis leads until the
+# patient actually reports eating out.
+expected_symptoms: [outside_food]
 contradictory_symptoms: [sore_throat, runny_nose, cough, facial_pressure]
 typical_duration_hours: {min: 2, max: 72}
 context_modifiers:

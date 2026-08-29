@@ -1,5 +1,9 @@
 code: pneumonia
 display_name: Pneumonia
+base_rate: uncommon
+base_rate_source: author judgement
+base_rate_note: >-
+  Serious and not rare, but far less common than upper respiratory infection.
 sources:
   - name: MedlinePlus - Pneumonia
     url: https://medlineplus.gov/pneumonia.html

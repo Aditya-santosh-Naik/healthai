@@ -119,6 +119,12 @@ class CandidateEvidence(Base):
     hallmark_present: Mapped[bool] = mapped_column(Boolean, default=False)
     context_factors_json: Mapped[list] = mapped_column(JSON, default=list)
     internal_score: Mapped[float] = mapped_column(Float, default=0.0)
+    # How the score was arrived at: the prevalence prior it started from, and
+    # every weighted symptom contribution. internal_score alone says a
+    # candidate ranked first but not why -- whether it led on specific evidence
+    # or merely on being common. Never rendered; this is for audit and for
+    # tests that assert the reason for a ranking rather than just its order.
+    scoring_json: Mapped[dict] = mapped_column(JSON, default=dict)
 
     consultation: Mapped["Consultation"] = relationship(back_populates="evidence")
 

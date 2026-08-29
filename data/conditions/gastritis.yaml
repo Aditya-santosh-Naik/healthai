@@ -1,5 +1,9 @@
 code: gastritis
 display_name: Gastritis
+base_rate: common
+base_rate_source: author judgement
+base_rate_note: >-
+  Common, strongly associated with NSAID use, alcohol and H. pylori.
 sources:
   - name: MedlinePlus - Gastritis
     url: https://medlineplus.gov/gastritis.html

@@ -139,23 +139,40 @@ this.
 ## 5. The evidence engine
 
 ```
-hallmark present        +3 each
-supporting present      +1 each
-expected absent         −2 each
-contradictory present   −3 each
-context modifier        ±1        (smoker, alcohol, elderly, monsoon, NSAID use)
-duration mismatch       −1
+score = base_rate_prior
+      + Σ( specificity_weight(symptom) × evidence_value(symptom) )
+      + context_modifiers
+      + duration_mismatch
 ```
 
-Bands are assigned by comparing the leader to the runner-up, not by absolute
-score alone:
+**The prior** is how common the condition is before any symptom is examined:
+`very_common` +4, `common` +2, `uncommon` 0, `rare` −3. Declared per condition
+in YAML, author judgement, disclosed in the README limitations.
+
+**The specificity weight** is `clamp(0.5 + ln(N / n), 0.5, 2.0)`, where `n` is
+how many of the `N` conditions list that symptom. Derived from the knowledge
+base, never hand-set. It is what stops `fever` — which half the conditions
+claim — counting the same as `retro_orbital_pain`, which exactly one does.
+
+**The evidence values** are unchanged in magnitude — hallmark +3, supporting
++1, expected absent −2, contradictory −3, context ±1, duration mismatch −1 —
+but each is multiplied by that symptom's specificity weight.
+
+Bands compare the leader to the runner-up, not the absolute score alone:
 
 ```
-top < 3, or (top − second) ≤ 2   →  insufficient_information
-top ≥ 6 and (top − second) ≥ 3   →  most_consistent
-top ≥ 3                          →  possible
-otherwise                        →  less_consistent
+top < 6, or (top − second) ≤ 4    →  insufficient_information
+top ≥ 14 and (top − second) ≥ 6   →  most_consistent
+top ≥ 6                           →  possible
+otherwise                         →  less_consistent
 ```
+
+These cutoffs were measured, not guessed: across all 96 eval cases the top
+score per case runs p25 2.49 / p50 6.04 / p85 13.94, and the lead over the
+runner-up p50 2.00 / p80 6.00. The `possible` threshold is additionally
+anchored — it must exceed the largest prior (4.0), or a cold would qualify on
+prevalence alone with no evidence at all. A test asserts that relationship so
+the two cannot drift apart.
 
 The margin rule is what makes the system honest. Flu and COVID-19 genuinely
 cannot be separated on symptoms alone, so the engine lands on
@@ -190,6 +207,17 @@ Hard cap of ten questions, sized to a focused acute history rather than to a
 round number, with an early stop once one candidate is decisively clear. A
 clinician does not keep working through a checklist after the picture has
 settled.
+
+"Decisive" means the same thing in the gate as in the verdict: both are
+derived from `MOST_CONSISTENT_MIN_SCORE` / `MIN_LEAD` rather than being set
+independently. They were independent once, and the gate stopped as soon as the
+candidates merely *separated* — ending "I have fever and cough" after four
+questions, three of them red-flag screens, on a merely `possible` answer, with
+six questions of budget unspent and body ache, fatigue and runny nose never
+asked. Giving up on becoming confident is the same failure as over-claiming,
+just quieter. The consultation now continues until it can name a
+most-consistent candidate, the question budget runs out, or no unanswered
+symptom would move the ranking.
 
 `Not sure` records presence as **unknown**, not as a denial. It contributes no
 evidence, but it is remembered -- returning nothing left the symptom

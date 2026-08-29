@@ -7,6 +7,8 @@ from dataclasses import dataclass
 
 from core.evidence_engine import (
     AMBIGUOUS_LEAD,
+    MOST_CONSISTENT_MIN_LEAD,
+    MOST_CONSISTENT_MIN_SCORE,
     POSSIBLE_MIN_SCORE,
     Band,
     CandidateResult,
@@ -30,7 +32,17 @@ MAX_QUESTIONS = 10
 # Stop early when one candidate is this far clear of the runner-up. Continuing
 # to interrogate someone after the evidence has settled is not thoroughness,
 # it is just friction.
-DECISIVE_LEAD = 5
+#
+# Derived from the band thresholds rather than set independently. It used to be
+# a bare 5 paired with POSSIBLE_MIN_SCORE, which meant the gate could stop
+# asking while the verdict was still only "possible" -- it gave up on becoming
+# confident instead of asking the two more questions that would have got there.
+# Rescaling the engine then left this constant behind on the old range and the
+# consultation ended after four questions with a merely-possible answer.
+# Deriving both from the band definition makes "decisive" mean the same thing
+# in the gate as it does in the verdict, permanently.
+DECISIVE_MIN_SCORE = MOST_CONSISTENT_MIN_SCORE
+DECISIVE_LEAD = MOST_CONSISTENT_MIN_LEAD
 
 
 @dataclass
@@ -79,7 +91,7 @@ def assess(
     # working through a checklist after the picture is clear, and neither
     # should this -- the remaining questions would add nothing.
     lead = top.score - ranked[1].score if len(ranked) > 1 else top.score
-    if top.score >= POSSIBLE_MIN_SCORE and lead >= DECISIVE_LEAD:
+    if top.score >= DECISIVE_MIN_SCORE and lead >= DECISIVE_LEAD:
         return Sufficiency(
             sufficient=True,
             reason="evidence_decisive",
@@ -106,11 +118,28 @@ def assess(
             ),
         )
 
-    if overall_band == Band.INSUFFICIENT:
+    if overall_band != Band.MOST_CONSISTENT:
+        # The candidates separate, but not far enough to name one.
+        #
+        # This used to return sufficient, which ended the consultation on a
+        # merely "possible" verdict with most of the question budget unspent.
+        # On "I have fever and cough" it stopped after four questions -- three
+        # of them red-flag screens -- without ever asking about body aches,
+        # fatigue or a runny nose, any one of which separates flu from COVID.
+        # Stopping there is the same failure as over-diagnosing, just quieter:
+        # it declines to find out something it could have found out.
+        #
+        # Termination is still guaranteed from two directions: MAX_QUESTIONS
+        # above is checked before anything else, and next_question returns None
+        # once no unanswered symptom would move the ranking, which the pipeline
+        # treats as "assess now".
         return Sufficiency(
             sufficient=False,
-            reason="insufficient_band",
-            detail="The evidence does not yet support naming a most-consistent candidate.",
+            reason="not_yet_decisive",
+            detail=(
+                "The evidence points somewhere, but not clearly enough to name "
+                "a most-consistent candidate yet."
+            ),
         )
 
     return Sufficiency(

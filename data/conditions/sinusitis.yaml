@@ -1,5 +1,9 @@
 code: sinusitis
 display_name: Sinusitis (Sinus Infection)
+base_rate: common
+base_rate_source: author judgement
+base_rate_note: >-
+  Common complication of a cold; less frequent than the cold that precedes it.
 sources:
   - name: MedlinePlus - Sinusitis
     url: https://medlineplus.gov/sinusitis.html

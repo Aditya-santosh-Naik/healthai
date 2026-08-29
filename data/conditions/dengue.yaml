@@ -1,5 +1,9 @@
 code: dengue
 display_name: Dengue Fever
+base_rate: uncommon
+base_rate_source: author judgement
+base_rate_note: >-
+  Highly seasonal. The monsoon shift is applied through context_modifiers, not this tier.
 sources:
   - name: WHO - Dengue and severe dengue
     url: https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue

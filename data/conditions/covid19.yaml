@@ -1,5 +1,9 @@
 code: covid19
 display_name: COVID-19
+base_rate: uncommon
+base_rate_source: author judgement
+base_rate_note: >-
+  Post-pandemic endemic circulation; no longer a leading cause of undifferentiated fever.
 sources:
   - name: WHO - Coronavirus disease (COVID-19)
     url: https://www.who.int/health-topics/coronavirus

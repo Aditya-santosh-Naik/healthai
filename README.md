@@ -414,6 +414,25 @@ Stated plainly, because they matter more than the feature list:
 - **No clinical review.** No qualified clinician validated the rules. The
   system encodes published guidance and biases toward escalation, but it has
   not been checked by a doctor.
+- **The base-rate priors are author judgement, not epidemiology.** Every one
+  of the 14 conditions carries a prevalence tier — `very_common`, `common`,
+  `uncommon`, `rare` — that shifts its starting score before any symptom is
+  considered. The tiers reflect published prevalence patterns in Indian
+  primary care, but they were assigned by the author and are not drawn from a
+  cited dataset, so every condition YAML records
+  `base_rate_source: author judgement` alongside a `base_rate_note` giving the
+  reasoning. They are ordinal tiers, not probabilities, and nothing in the
+  system converts them into one. An unsourced prior is a defensible
+  limitation; an undisclosed one would not be, which is why they are declared
+  in the data rather than buried in the scoring code.
+- **The evidence weights are unfitted constants.** +3 for a hallmark and the
+  0.5–2.0 specificity clamp are reasoned choices, not values learned from
+  outcome data. The specificity weights themselves are derived from the
+  knowledge base rather than hand-set, but with only 14 conditions the
+  inverse-frequency term saturates: 50 of the 63 symptoms in use sit at the
+  2.0 ceiling, so the weighting separates the genuinely generic symptoms from
+  the rest and does little beyond that. It would discriminate more finely
+  across a larger condition set.
 - **Not a medical device**, not intended for clinical use, not validated
   against patient outcomes.
 - **14 conditions only.** Anything outside that set will not be recognised.

@@ -30,16 +30,26 @@ export default function Consultation() {
   const [error, setError] = useState<string | null>(null);
   const [feedbackSent, setFeedbackSent] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [lines, turn]);
+  const resultRef = useRef<HTMLDivElement>(null);
 
   const finished =
     turn !== null &&
     (turn.outcome === "complete" ||
       turn.outcome === "escalated" ||
       turn.outcome === "refused");
+
+  useEffect(() => {
+    // Scrolling to the bottom is right for a one-line follow-up question, but
+    // the final result is taller than the viewport -- doing it there lands the
+    // user on the closing disclaimer with the urgency banner and the
+    // assessment scrolled off the top. Anchor to the START of the result
+    // instead, and let them scroll down through it.
+    if (finished) {
+      resultRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+      return;
+    }
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [lines, turn, finished]);
 
   function applyTurn(next: Turn) {
     setTurn(next);
@@ -216,7 +226,7 @@ export default function Consultation() {
 
       {/* result */}
       {finished && turn && (
-        <div className="space-y-4">
+        <div ref={resultRef} className="scroll-mt-4 space-y-4">
           <ResultView turn={turn} />
 
           <div className="flex flex-wrap items-center gap-2">

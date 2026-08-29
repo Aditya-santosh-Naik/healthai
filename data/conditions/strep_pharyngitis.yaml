@@ -1,5 +1,9 @@
 code: strep_pharyngitis
 display_name: Strep Throat (Streptococcal Pharyngitis)
+base_rate: common
+base_rate_source: author judgement
+base_rate_note: >-
+  A minority of sore throats are streptococcal; most are viral.
 sources:
   - name: CDC - Strep Throat
     url: https://www.cdc.gov/group-a-strep/about/strep-throat.html

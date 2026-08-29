@@ -1,5 +1,9 @@
 code: common_cold
 display_name: Common Cold
+base_rate: very_common
+base_rate_source: author judgement
+base_rate_note: >-
+  Most frequent acute illness in ambulatory care; several episodes per adult per year.
 sources:
   - name: MedlinePlus - Common Cold
     url: https://medlineplus.gov/commoncold.html

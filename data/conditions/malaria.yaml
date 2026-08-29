@@ -1,5 +1,9 @@
 code: malaria
 display_name: Malaria
+base_rate: rare
+base_rate_source: author judgement
+base_rate_note: >-
+  Indian case counts have fallen sharply under the elimination programme. Regional and seasonal risk is applied through context_modifiers, not this tier.
 sources:
   - name: WHO - Malaria
     url: https://www.who.int/news-room/fact-sheets/detail/malaria
