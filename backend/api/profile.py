@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from api.deps import get_current_profile, get_current_user
+from api.deps import get_current_profile, owned_or_404, get_current_user
 from database import get_db
 from models import (
     PatientAllergy,
@@ -146,9 +146,7 @@ def delete_condition(
     profile: PatientProfile = Depends(get_current_profile),
     db: Session = Depends(get_db),
 ) -> None:
-    row = db.get(PatientCondition, item_id)
-    if row is None or row.profile_id != profile.id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Condition not found")
+    row = owned_or_404(db, PatientCondition, item_id, profile, "Condition")
     db.delete(row)
     db.commit()
 
@@ -174,9 +172,7 @@ def delete_allergy(
     profile: PatientProfile = Depends(get_current_profile),
     db: Session = Depends(get_db),
 ) -> None:
-    row = db.get(PatientAllergy, item_id)
-    if row is None or row.profile_id != profile.id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Allergy not found")
+    row = owned_or_404(db, PatientAllergy, item_id, profile, "Allergy")
     db.delete(row)
     db.commit()
 
@@ -202,8 +198,6 @@ def delete_medication(
     profile: PatientProfile = Depends(get_current_profile),
     db: Session = Depends(get_db),
 ) -> None:
-    row = db.get(PatientMedication, item_id)
-    if row is None or row.profile_id != profile.id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Medication not found")
+    row = owned_or_404(db, PatientMedication, item_id, profile, "Medication")
     db.delete(row)
     db.commit()

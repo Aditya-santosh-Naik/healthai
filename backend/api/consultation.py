@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from api.deps import get_current_profile
+from api.deps import get_current_profile, owned_or_404
 from audit.logger import log_event
 from core import diet_lifestyle, knowledge
 from core.followup_engine import apply_answer
@@ -57,12 +57,7 @@ def _now() -> datetime:
 
 
 def _get_consultation(db: Session, profile: PatientProfile, consultation_id: int) -> Consultation:
-    consultation = db.get(Consultation, consultation_id)
-    if consultation is None or consultation.profile_id != profile.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Consultation not found"
-        )
-    return consultation
+    return owned_or_404(db, Consultation, consultation_id, profile, "Consultation")
 
 
 def _load_symptoms(db: Session, consultation_id: int) -> list[ExtractedSymptom]:
@@ -194,6 +189,27 @@ def _persist_result(db: Session, consultation: Consultation, result) -> None:
             )
 
 
+def _candidate_out(c) -> CandidateOut:
+    """One candidate on the wire. Shared by `candidates` and `ruled_out`.
+
+    These were two identical fifteen-line literals. Identical is the problem:
+    a field added to one and not the other is invisible in review, and the
+    ruled-out list is exactly where nobody looks.
+    """
+    return CandidateOut(
+        code=c.code,
+        display_name=c.display_name,
+        band=c.band,
+        evidence=EvidenceOut(
+            supporting=[e.display for e in c.supporting],
+            missing=[e.display for e in c.missing],
+            contradictory=[e.display for e in c.contradictory],
+        ),
+        context_factors=c.context_factors,
+        sources=c.sources,
+    )
+
+
 def _to_turn(consultation: Consultation, profile: PatientProfile, result) -> TurnOut:
     """Map a PipelineResult onto the wire format."""
     turn = TurnOut(
@@ -238,63 +254,19 @@ def _to_turn(consultation: Consultation, profile: PatientProfile, result) -> Tur
         return turn
 
     if result.outcome == Outcome.NEEDS_QUESTION and result.question:
-        q = result.question
-        turn.question = QuestionOut(
-            symptom_code=q.symptom_code,
-            text=q.text,
-            options=q.options,
-            kind=q.kind,
-            rationale=q.rationale,
-        )
+        turn.question = QuestionOut.model_validate(result.question)
         return turn
 
     # Completed assessment.
     turn.band = result.band
-    turn.candidates = [
-        CandidateOut(
-            code=c.code,
-            display_name=c.display_name,
-            band=c.band,
-            evidence=EvidenceOut(
-                supporting=[e.display for e in c.supporting],
-                missing=[e.display for e in c.missing],
-                contradictory=[e.display for e in c.contradictory],
-            ),
-            context_factors=c.context_factors,
-            sources=c.sources,
-        )
-        for c in result.candidates
-    ]
-
-    turn.ruled_out = [
-        CandidateOut(
-            code=c.code,
-            display_name=c.display_name,
-            band=c.band,
-            evidence=EvidenceOut(
-                supporting=[e.display for e in c.supporting],
-                missing=[e.display for e in c.missing],
-                contradictory=[e.display for e in c.contradictory],
-            ),
-            context_factors=c.context_factors,
-            sources=c.sources,
-        )
-        for c in result.ruled_out
-    ]
+    turn.candidates = [_candidate_out(c) for c in result.candidates]
+    turn.ruled_out = [_candidate_out(c) for c in result.ruled_out]
 
     if result.safety:
         turn.medication_safety = MedicationSafetyOut(
             overall=result.safety.overall,
             findings=[
-                SafetyFindingOut(
-                    subject_drug=f.subject_drug,
-                    related=f.related,
-                    severity=f.severity,
-                    reason=f.reason,
-                    source_url=f.source_url,
-                    kind=f.kind,
-                )
-                for f in result.safety.findings
+                SafetyFindingOut.model_validate(f) for f in result.safety.findings
             ],
             checked_medicines=result.safety.checked_medicines,
             unrecognised=result.safety.unrecognised,
@@ -304,23 +276,10 @@ def _to_turn(consultation: Consultation, profile: PatientProfile, result) -> Tur
         turn.medication_guidance = MedicationGuidanceOut(
             avoid=[a.text for a in result.guidance.avoid],
             general_info=[
-                GeneralInfoOut(
-                    display=g.display,
-                    used_for=g.used_for,
-                    caveat=g.caveat,
-                    source_url=g.source_url,
-                )
-                for g in result.guidance.general_info
+                GeneralInfoOut.model_validate(g) for g in result.guidance.general_info
             ],
             treatment=[
-                TreatmentNoteOut(
-                    condition_display=t.condition_display,
-                    needs_prescription=t.needs_prescription,
-                    self_limiting=t.self_limiting,
-                    summary=t.summary,
-                    source_url=t.source_url,
-                )
-                for t in result.guidance.treatment
+                TreatmentNoteOut.model_validate(t) for t in result.guidance.treatment
             ],
             needs_doctor_prescription=result.guidance.needs_doctor_prescription,
         )
@@ -417,9 +376,19 @@ def _advance(
         commit=False,
     )
 
+    turn = _to_turn(consultation, profile, result)
+    if consultation.status == ConsultationStatus.COMPLETE:
+        # Store what the rebuild cannot recompute. Building the turn first and
+        # persisting from it guarantees history serves the same bytes the live
+        # view did, rather than a second assembly that can drift.
+        consultation.doctor_summary = turn.doctor_summary
+        consultation.guidance_json = (
+            turn.medication_guidance.model_dump() if turn.medication_guidance else None
+        )
+
     db.commit()
     db.refresh(consultation)
-    return _to_turn(consultation, profile, result)
+    return turn
 
 
 @router.post("/start", response_model=TurnOut, status_code=status.HTTP_201_CREATED)

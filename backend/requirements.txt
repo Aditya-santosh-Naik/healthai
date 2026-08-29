@@ -4,7 +4,11 @@ uvicorn[standard]==0.34.0
 pydantic==2.10.4
 pydantic-settings==2.7.0
 sqlalchemy==2.0.36
-python-jose[cryptography]==3.3.0
+# PyJWT, not python-jose: jose has been unmaintained since 2021 and carries
+# CVE-2024-33663 (algorithm confusion) and CVE-2024-33664 (JWE decompression
+# bomb). Dropping it also removes cryptography, ecdsa, rsa and pyasn1, none of
+# which anything else imports.
+PyJWT==2.10.1
 passlib==1.7.4
 bcrypt==4.0.1
 python-multipart==0.0.20

@@ -9,6 +9,10 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class QuestionOut(BaseModel):
+    # Mirrors the core dataclass field for field, so responses are
+    # validated straight off it instead of copied attribute by attribute.
+    model_config = ConfigDict(from_attributes=True)
+
     symptom_code: str
     text: str
     options: list[str]
@@ -47,6 +51,10 @@ class CandidateOut(BaseModel):
 
 
 class SafetyFindingOut(BaseModel):
+    # Mirrors the core dataclass field for field, so responses are
+    # validated straight off it instead of copied attribute by attribute.
+    model_config = ConfigDict(from_attributes=True)
+
     subject_drug: str
     related: str | None = None
     severity: str
@@ -63,6 +71,10 @@ class MedicationSafetyOut(BaseModel):
 
 
 class TreatmentNoteOut(BaseModel):
+    # Mirrors the core dataclass field for field, so responses are
+    # validated straight off it instead of copied attribute by attribute.
+    model_config = ConfigDict(from_attributes=True)
+
     condition_display: str
     needs_prescription: bool
     self_limiting: bool
@@ -71,6 +83,10 @@ class TreatmentNoteOut(BaseModel):
 
 
 class GeneralInfoOut(BaseModel):
+    # Mirrors the core dataclass field for field, so responses are
+    # validated straight off it instead of copied attribute by attribute.
+    model_config = ConfigDict(from_attributes=True)
+
     display: str
     used_for: str
     caveat: str

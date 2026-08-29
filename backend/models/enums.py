@@ -48,10 +48,16 @@ class ExtractionStatus(StrEnum):
 
 
 class ReviewStatus(StrEnum):
+    """Extracted-fact review states.
+
+    No EDITED, despite spec section 6 listing it: the confirmation flow is
+    confirm-or-reject and there is no edit path in the UI or the API. An enum
+    value nothing can produce reads as a supported state that silently is not.
+    """
+
     PENDING = "pending"
     CONFIRMED = "confirmed"
     REJECTED = "rejected"
-    EDITED = "edited"
 
 
 class ConsultationStatus(StrEnum):

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
-from api.deps import get_current_profile
+from api.deps import get_current_profile, owned_or_404
 from api.history import get_detail
 from audit.logger import log_event
 from database import get_db
@@ -26,11 +26,7 @@ def download_report(
     Built from the stored structured rows, so the PDF matches what was decided
     at the time. The LLM is not called again.
     """
-    consultation = db.get(Consultation, consultation_id)
-    if consultation is None or consultation.profile_id != profile.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Consultation not found"
-        )
+    consultation = owned_or_404(db, Consultation, consultation_id, profile, "Consultation")
 
     detail = get_detail(consultation_id, profile, db)
     generated_at = datetime.now(timezone.utc).strftime("%d/%m/%Y %H:%M")

@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
-from api.deps import get_current_profile
+from api.deps import get_current_profile, owned_or_404
 from audit.logger import log_event
 from config import UPLOAD_DIR
 from core import knowledge
@@ -33,6 +33,7 @@ from models.enums import ExtractionStatus, Provenance, ReviewStatus
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
 MAX_BYTES = 10 * 1024 * 1024
+CHUNK_BYTES = 1024 * 1024
 MAX_PAGES = 30
 
 
@@ -80,12 +81,22 @@ async def upload(
             detail="Only PDF files are supported.",
         )
 
-    data = await file.read()
-    if len(data) > MAX_BYTES:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail="That file is larger than 10 MB.",
-        )
+    # Read in chunks and stop at the limit. `await file.read()` with no
+    # argument buffers the WHOLE upload into memory before the size is
+    # checked, so the 10 MB limit only ever applied after the damage was done
+    # -- a single multi-gigabyte POST could exhaust RAM and take the process
+    # down, without needing to authenticate as anyone in particular.
+    chunks: list[bytes] = []
+    total = 0
+    while chunk := await file.read(CHUNK_BYTES):
+        total += len(chunk)
+        if total > MAX_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail="That file is larger than 10 MB.",
+            )
+        chunks.append(chunk)
+    data = b"".join(chunks)
 
     stored_name = f"{uuid.uuid4().hex}.pdf"
     path: Path = UPLOAD_DIR / stored_name
@@ -190,11 +201,7 @@ def confirm_facts(
     db: Session = Depends(get_db),
 ) -> DocumentOut:
     """Write confirmed facts to the profile. This is the only path in."""
-    document = db.get(MedicalDocument, document_id)
-    if document is None or document.profile_id != profile.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Document not found"
-        )
+    document = owned_or_404(db, MedicalDocument, document_id, profile, "Document")
 
     owned = {f.id: f for f in document.facts}
     unknown = (set(payload.fact_ids) | set(payload.rejected_ids)) - set(owned)

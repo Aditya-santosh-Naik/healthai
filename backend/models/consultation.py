@@ -32,6 +32,13 @@ class Consultation(Base):
     escalation_reason: Mapped[str | None] = mapped_column(Text)
     llm_raw_output: Mapped[str | None] = mapped_column(Text)
     questions_asked: Mapped[int] = mapped_column(Integer, default=0)
+    # The two outputs the history rebuild cannot derive from the stored rows.
+    # Both are computed from the patient's profile as it was at the time, so
+    # recomputing them later would quietly answer a different question --
+    # "what would we say now?" rather than "what did we say?". Storing them
+    # keeps a reopened consultation an accurate record.
+    doctor_summary: Mapped[str | None] = mapped_column(Text)
+    guidance_json: Mapped[dict | None] = mapped_column(JSON)
 
     profile: Mapped["PatientProfile"] = relationship(back_populates="consultations")  # noqa: F821
     messages: Mapped[list["Message"]] = relationship(
@@ -91,7 +98,10 @@ class ConsultationSymptom(Base):
     present: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     duration_hours: Mapped[float | None] = mapped_column(Float)
     severity: Mapped[int | None] = mapped_column(Integer)
-    onset: Mapped[str | None] = mapped_column(String(64))
+    # `onset` (spec section 6) is deliberately absent: nothing ever wrote it.
+    # duration_hours already carries onset timing, parsed from "2 days" or
+    # "since yesterday", and a second never-populated field only invites
+    # someone to read it and get None.
     source: Mapped[str] = mapped_column(String(16), default="stated")
 
     consultation: Mapped["Consultation"] = relationship(back_populates="symptoms")

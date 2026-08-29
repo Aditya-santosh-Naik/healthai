@@ -6,7 +6,7 @@ Past consultations are history, never auto-promoted to medical fact
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from api.deps import get_current_profile
+from api.deps import get_current_profile, owned_or_404
 from core import knowledge
 from database import get_db
 from main import DISCLAIMER
@@ -27,6 +27,7 @@ from schemas.consultation import (
     EvidenceOut,
     HistoryDetail,
     HistoryItem,
+    MedicationGuidanceOut,
     MedicationSafetyOut,
     MessageOut,
     SafetyFindingOut,
@@ -103,11 +104,7 @@ def get_detail(
     Nothing is recomputed and the LLM is not called again; this is what was
     actually decided at the time.
     """
-    consultation = db.get(Consultation, consultation_id)
-    if consultation is None or consultation.profile_id != profile.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Consultation not found"
-        )
+    consultation = owned_or_404(db, Consultation, consultation_id, profile, "Consultation")
 
     evidence = (
         db.query(CandidateEvidence)
@@ -241,13 +238,23 @@ def get_detail(
             SymptomOut(
                 code=s.symptom_code,
                 display=knowledge.display_name(s.symptom_code),
-                present=bool(s.present),
+                # Passed through, NOT coerced. bool(None) is False, which
+                # turned every "Not sure" into an explicit denial on reopening
+                # -- fabricating evidence against a condition, and putting a
+                # denial the patient never made onto the printed summary.
+                present=s.present,
             )
             for s in symptoms
         ],
         candidates=candidates,
         ruled_out=ruled_out,
         medication_safety=safety,
+        medication_guidance=(
+            MedicationGuidanceOut.model_validate(consultation.guidance_json)
+            if consultation.guidance_json
+            else None
+        ),
+        doctor_summary=consultation.doctor_summary or "",
         diet=diet,
         sources=sources,
         messages=[MessageOut.model_validate(m) for m in messages],
@@ -260,10 +267,6 @@ def delete_consultation(
     profile: PatientProfile = Depends(get_current_profile),
     db: Session = Depends(get_db),
 ) -> None:
-    consultation = db.get(Consultation, consultation_id)
-    if consultation is None or consultation.profile_id != profile.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Consultation not found"
-        )
+    consultation = owned_or_404(db, Consultation, consultation_id, profile, "Consultation")
     db.delete(consultation)
     db.commit()

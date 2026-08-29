@@ -1,7 +1,7 @@
 """Password hashing and JWT issuing/verification."""
 from datetime import datetime, timedelta, timezone
 
-from jose import JWTError, jwt
+import jwt
 from passlib.context import CryptContext
 
 from config import settings
@@ -34,9 +34,17 @@ def create_access_token(subject: str) -> str:
 
 
 def decode_access_token(token: str) -> str | None:
-    """Return the subject (user id as string), or None if the token is bad."""
+    """Return the subject (user id as string), or None if the token is bad.
+
+    PyJWT rather than python-jose: jose has been unmaintained since 2021 and
+    carries CVE-2024-33663 (algorithm confusion) and CVE-2024-33664 (a
+    decompression bomb reachable through JWE). The algorithms list below
+    already pinned the first one shut, but an unmaintained library sitting on
+    the authentication path is not worth defending. PyJWT is a drop-in for the
+    two calls this module makes.
+    """
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-    except JWTError:
+    except jwt.PyJWTError:
         return None
     return payload.get("sub")
