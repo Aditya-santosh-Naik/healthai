@@ -27,7 +27,7 @@ wrapper around it.
 
 ## Running it on Windows
 
-### 1. Install the three prerequisites
+### 1. Install the prerequisites
 
 | | Version | Where |
 |---|---|---|
@@ -35,66 +35,94 @@ wrapper around it.
 | **Node** | 18 or newer | [nodejs.org](https://nodejs.org) — the LTS installer |
 | **Ollama** | any | [ollama.com](https://ollama.com) — optional, see below |
 
-Check they are visible to the terminal:
+Check the terminal can see all three:
 
 ```bash
 python --version && node --version && ollama --version
 ```
 
-Ollama is optional. Without it the app still runs end to end — every AI surface
-has a deterministic fallback — but the final wording comes from templates
-instead of the model. With it, pull the model once (~2 GB):
+Ollama is optional. Without it the app still works end to end — every AI
+surface has a deterministic fallback — but the final wording comes from
+templates instead of the model. With it, pull the model once (~2 GB):
 
 ```bash
 ollama pull qwen2.5:3b
 ```
 
-### 2. Enable Long Path support (one time, needs admin)
+### 2. Enable Long Path support — one time, needs admin
 
-PyTorch ships header files with paths longer than Windows' default 260-character
-limit, so `pip install` **fails part-way through** without this. Open PowerShell
-**as Administrator** and run:
+PyTorch ships header files whose paths are longer than Windows' default
+260-character limit, so **`pip install` fails part-way through without this.**
+Open PowerShell **as Administrator** and run:
 
 ```bash
 New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name LongPathsEnabled -Value 1 -PropertyType DWORD -Force
 ```
 
-Then **restart the terminal**. Skip this only if you clone to a short path such
-as `C:\healthai`, and even then it is safer to just enable it.
+Then close and reopen the terminal. You can skip this only if you clone to a
+short path such as `C:\healthai`.
 
-### 3. Clone and set up
+### 3. Clone
 
 ```bash
 git clone https://github.com/Aditya-santosh-Naik/healthai.git
 ```
 
-```bash
-cd healthai && powershell -ExecutionPolicy Bypass -File setup.ps1
-```
+### 4. Set up the backend
 
-`setup.ps1` creates the virtual environment, installs both dependency sets,
-seeds the demo database and builds the vector index. First run downloads about
-700 MB of Python packages plus a 130 MB embedding model, so give it ten minutes
-on a normal connection. It is safe to re-run at any time.
-
-### 4. Start the two servers
-
-Two terminals, both from the project root:
+Takes a few minutes: about 700 MB of packages, mostly PyTorch, then a 130 MB
+embedding model. All four commands are safe to re-run.
 
 ```bash
-cd backend && .venv\Scripts\python.exe -m uvicorn main:app --port 8000
+cd healthai\backend
 ```
 
 ```bash
-cd frontend && npm run dev
+python -m venv .venv
+```
+
+```bash
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+```bash
+.venv\Scripts\python.exe seed.py
+```
+
+```bash
+.venv\Scripts\python.exe -m rag.index
+```
+
+`seed.py` creates the three demo patients. `rag.index` builds the vector index.
+
+### 5. Set up the frontend
+
+```bash
+cd healthai\frontend && npm install
+```
+
+### 6. Run it
+
+Two terminals, kept open.
+
+Backend:
+
+```bash
+cd healthai\backend && .venv\Scripts\python.exe -m uvicorn main:app --port 8000
+```
+
+Frontend:
+
+```bash
+cd healthai\frontend && npm run dev
 ```
 
 Open **http://localhost:5173**.
 
-### 5. Log in
+### 7. Log in
 
-Password `demo123456` for all three. They are deliberately different so the same
-symptoms produce visibly different medication and diet output:
+Password `demo123456` for all three. The profiles differ deliberately, so the
+same symptoms produce visibly different medication and diet output:
 
 | Email | Profile |
 |---|---|
@@ -106,80 +134,81 @@ symptoms produce visibly different medication and diet output:
 
 ---
 
+## Running it on macOS or Linux
+
+Identical, minus step 2, and the virtual environment puts Python in `bin/`
+rather than `Scripts/`:
+
+```bash
+git clone https://github.com/Aditya-santosh-Naik/healthai.git && cd healthai/backend
+```
+
+```bash
+python3 -m venv .venv && .venv/bin/python -m pip install -r requirements.txt
+```
+
+On **Linux only**, install the CPU build of PyTorch first — the default PyPI
+wheel bundles CUDA and is several GB, and the embedder runs on CPU anyway:
+
+```bash
+.venv/bin/python -m pip install --index-url https://download.pytorch.org/whl/cpu torch
+```
+
+```bash
+.venv/bin/python seed.py && .venv/bin/python -m rag.index
+```
+
+```bash
+.venv/bin/python -m uvicorn main:app --port 8000
+```
+
+```bash
+cd ../frontend && npm install && npm run dev
+```
+
+---
+
 ## Troubleshooting
 
-**`pip install` dies on a long filename, or a `predicated_tile_access_iterator`
-header.** Long Path support is off — do step 2 above, then re-run `setup.ps1`.
+**`pip install` dies on a long filename**, or one mentioning
+`predicated_tile_access_iterator`. Long Path support is off — do step 2, reopen
+the terminal, and run the `pip install` again.
 
 **`OSError: [WinError 4551] An Application Control policy has blocked this
-file`, mentioning `torch_global_deps.dll`.** Windows **Smart App Control** is
-blocking PyTorch's unsigned DLLs. It is a consumer feature that is not intended
-for development machines, and it has no exclusion list. Turn it off in Windows
-Security → App & browser control → Smart App Control → Off. **This is permanent
-— Windows will not let you switch it back on without resetting the PC.** Check
-its state with:
+file`**, naming `torch_global_deps.dll`. Windows **Smart App Control** is
+blocking PyTorch's unsigned DLLs. It has no exclusion list and is not intended
+for development machines. Turn it off in Windows Security → App & browser
+control → Smart App Control → Off. **This is permanent — Windows will not let
+you switch it back on without resetting the PC.** Check the current state with:
 
 ```bash
 Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy" -Name VerifiedAndReputablePolicyState
 ```
 
-`1` means enforced, `0` means off.
+`1` means enforced, `0` means off. Symptom if you miss it: about 35 tests fail
+for no obvious reason, all of them touching retrieval.
 
 **`python` opens the Microsoft Store.** The PATH entry is missing. Re-run the
 Python installer, choose Modify, and tick "Add python.exe to PATH".
 
-**Port 8000 or 5173 already in use.** Find and stop the process:
+**Port 8000 or 5173 is already in use.** Find the process and stop it:
 
 ```bash
 netstat -ano | findstr :8000
 ```
 
 **The result page says the AI service is unavailable.** Ollama is not running.
-Start it, or ignore it — the deterministic fallback still produces a full
+Start it, or carry on — the deterministic fallback still produces a full
 assessment.
 
----
-
-## Running it on macOS or Linux
-
-Same steps, but use `setup.sh` and the `bin/` paths:
+**Checking the install worked.** From `backend`, with the virtual environment
+built:
 
 ```bash
-git clone https://github.com/Aditya-santosh-Naik/healthai.git && cd healthai && bash setup.sh
+.venv\Scripts\python.exe -m pytest tests -q
 ```
 
-```bash
-cd backend && .venv/bin/python -m uvicorn main:app --port 8000
-```
-
-```bash
-cd frontend && npm run dev
-```
-
-On Linux the default PyPI PyTorch wheel bundles CUDA and is several GB;
-`setup.sh` pulls the CPU wheel instead, since the embedder runs on CPU.
-
----
-
-## Manual setup
-
-If you would rather not run the script, or a step failed and you want to see
-where:
-
-```bash
-cd backend
-python -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt
-.venv\Scripts\python.exe seed.py            # 3 demo patients
-.venv\Scripts\python.exe -m rag.index       # build the vector index
-.venv\Scripts\python.exe -m uvicorn main:app --port 8000
-```
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
+86 tests should pass.
 
 ---
 
