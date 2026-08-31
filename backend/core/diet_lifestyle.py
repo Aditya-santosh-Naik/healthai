@@ -35,7 +35,14 @@ SECTION_TO_CATEGORY = {
 
 # Tags a given diet type cannot have.
 DIET_EXCLUSIONS = {
-    "veg": {"contains_meat"},
+    # Eggs are excluded from "veg", not only from "vegan". In Indian usage
+    # vegetarian ordinarily excludes eggs -- "eggetarian" exists as a separate
+    # word precisely because the default does not include them. Without this
+    # the COVID template offered a vegetarian "dal, paneer, eggs, or sprouts",
+    # which is the same failure as the chicken soup the spec warns about, just
+    # less obvious. Erring towards exclusion also fails safe: a vegetarian who
+    # does eat eggs loses one suggestion, where the reverse breaks trust.
+    "veg": {"contains_meat", "contains_egg"},
     "vegan": {"contains_meat", "contains_egg", "contains_dairy"},
     "jain": {"contains_meat", "contains_egg", "contains_root"},
     "non_veg": set(),

@@ -10,6 +10,14 @@ backend/reports_out/
 data/index.npz
 backend/.secret_key
 
+# Secrets. config.py reads backend/.env via SettingsConfigDict(env_file=".env"),
+# so anyone moving a key into an env var lands it here. Ignored BEFORE anyone
+# creates one -- a secret committed once stays in history whatever happens
+# next.
+.env
+*.env
+!.env.example
+
 # Node
 node_modules/
 frontend/dist/

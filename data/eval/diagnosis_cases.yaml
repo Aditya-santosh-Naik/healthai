@@ -1,0 +1,84 @@
+# Labelled diagnosis-ranking cases.
+#
+# Two kinds of label, and the second matters as much as the first:
+#
+#   top    the condition that must rank first
+#   band   the outcome band that must be produced
+#
+# Cases that expect `insufficient_information` are not filler. A system that
+# always names something is the failure mode this project exists to avoid, so
+# "refuses to answer" is a labelled correct answer here, not an absence of one.
+
+cases:
+
+  # --- must reach a verdict -------------------------------------------------
+  - text: "high fever, severe headache, pain behind my eyes, severe body ache, rash for 3 days"
+    top: dengue
+    note: "retro-orbital pain is near-unique to dengue"
+
+  - text: "fever, body aches, chills, sudden onset, dry cough, fatigue, 2 days"
+    top: influenza
+
+  - text: "burning in my chest after eating, worse when I lie down, sour taste, for 2 weeks"
+    top: gerd
+
+  - text: "sore throat, hurts to swallow, white patches on my tonsils, fever, no cough"
+    top: strep_pharyngitis
+
+  - text: "loose motions many times, vomiting, stomach cramps since yesterday after eating outside"
+    top: food_poisoning
+    note: "the food exposure is what separates this from gastroenteritis"
+
+  - text: "runny nose, sneezing, blocked nose, mild sore throat, no fever"
+    top: common_cold
+
+  - text: "cough with yellow phlegm, chest pain when breathing, high fever, breathless"
+    top: pneumonia
+
+  - text: "facial pressure, blocked nose, thick nasal discharge, headache worse bending forward"
+    top: sinusitis
+
+  # --- must rank sensibly even without a verdict ----------------------------
+  - text: "cough"
+    band: insufficient_information
+    note: "one non-specific symptom"
+
+  - text: "fever"
+    band: insufficient_information
+
+  - text: "sore throat"
+    band: insufficient_information
+
+  - text: "tired"
+    band: insufficient_information
+
+  - text: "headache"
+    band: insufficient_information
+
+  - text: "feeling unwell"
+    band: insufficient_information
+    note: "no extractable symptom at all"
+
+  - text: "stomach pain"
+    band: insufficient_information
+
+  # --- overlapping presentations that SHOULD stay unresolved ----------------
+  - text: "fever and cough for 2 days"
+    band: insufficient_information
+    note: "flu, covid and a cold are genuinely inseparable on this"
+
+  - text: "loose motions 2 days, stomach ache"
+    band: insufficient_information
+    note: "gastroenteritis and food poisoning overlap without a food history"
+
+  - text: "fever, headache, body ache"
+    band: insufficient_information
+    note: "matches most of the febrile conditions equally"
+
+  # --- negation must change the answer --------------------------------------
+  - text: "sore throat, hurts to swallow, white patches on tonsils, fever, no cough, no runny nose"
+    top: strep_pharyngitis
+    note: "absent cough and coryza push away from viral causes"
+
+  - text: "runny nose, sneezing, sore throat, no fever, no body ache"
+    top: common_cold

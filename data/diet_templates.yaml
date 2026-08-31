@@ -72,7 +72,12 @@ conditions:
     prefer:
       - text: Easily digested food - khichdi, curd rice, upma, or plain toast.
         tags: [contains_dairy]
-      - text: Warm soups and clear broths.
+      # "Clear broth" on its own reads as meat stock, and this entry carried no
+      # tags, so a vegan influenza patient was told to drink it. Naming the
+      # vegetable version is better than tagging it contains_meat: tagging
+      # would withhold the advice from vegetarians entirely, whereas this is
+      # correct for every diet type and loses nothing for anyone.
+      - text: Warm soups and clear vegetable broths.
         tags: []
       - text: Small frequent meals rather than three large ones while your appetite is low.
         tags: []

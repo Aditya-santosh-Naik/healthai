@@ -2,10 +2,14 @@
 
 One process, modular packages. No microservices (spec §15).
 """
+import sys
+import traceback
+import uuid
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from api import auth, profile
 from config import settings
@@ -38,6 +42,43 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.exception_handler(Exception)
+async def unhandled_error(request: Request, exc: Exception) -> JSONResponse:
+    """Return nothing internal, and log nothing clinical.
+
+    Two separate obligations that are easy to conflate:
+
+    * The RESPONSE must not carry internals. A stack trace tells an attacker
+      the framework, file layout and library versions, and an exception
+      message can quote the input that caused it -- which here is the
+      patient's own description of their symptoms.
+    * The LOG must not carry the patient's text either. Server logs are the
+      least protected place health data can land: they are shipped, tailed and
+      pasted into issue trackers.
+
+    So the traceback FRAMES are logged (file, line, function -- enough to find
+    the bug) while the exception's message and arguments are deliberately
+    dropped, because that is where user text ends up. The reference id ties a
+    user's report to a log line without either side carrying the content.
+    """
+    reference = uuid.uuid4().hex[:12]
+    frames = traceback.format_tb(exc.__traceback__)
+    print(
+        f"[error {reference}] {type(exc).__name__} "
+        f"at {request.method} {request.url.path}\n" + "".join(frames),
+        file=sys.stderr,
+    )
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": (
+                "Something went wrong on our side. Nothing about your health "
+                f"information was affected. Reference: {reference}"
+            )
+        },
+    )
+
 
 app.include_router(auth.router)
 app.include_router(profile.router)
