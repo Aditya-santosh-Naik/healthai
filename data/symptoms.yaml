@@ -11,7 +11,14 @@ symptoms:
   fever:
     display: Fever
     aliases: [fever, temperature, feverish, running a temperature, high temperature,
-              raised temperature, pyrexia, bukhar, febrile, hot with fever, burning up]
+              raised temperature, pyrexia, bukhar, febrile, hot with fever, burning up,
+              jwar,
+              jvar,
+              jwara,
+              jvara,
+              bukhaar,
+              kaichal,
+              kaychal]
   high_fever:
     display: High fever
     aliases: [high fever, very high fever, 103 fever, 104 fever, spiking fever,
@@ -27,10 +34,15 @@ symptoms:
   fatigue:
     display: Fatigue
     aliases: [fatigue, tired, tiredness, exhausted, exhaustion, no energy,
-              feeling drained, worn out, thakan, very tired, extremely tired]
+              feeling drained, worn out, thakan, very tired, extremely tired,
+              thakaan,
+              body feels heavy,
+              feeling heavy]
   weakness:
     display: Weakness
-    aliases: [weakness, weak, feeling weak, kamzori, no strength, feeble]
+    aliases: [weakness, weak, feeling weak, kamzori, no strength, feeble,
+              kamjori,
+              sustha]
   malaise:
     display: Feeling generally unwell
     aliases: [malaise, unwell, not feeling well, feeling off, feeling rough,
@@ -39,7 +51,10 @@ symptoms:
   body_ache:
     display: Body aches
     aliases: [body ache, body aches, body pain, body pains, aching all over,
-              aches all over, whole body pain, badan dard, sore all over, achy]
+              aches all over, whole body pain, badan dard, sore all over, achy,
+              sharir dard,
+              body paining,
+              mai dard]
   severe_body_ache:
     display: Severe body aches
     aliases: [severe body ache, severe body pain, terrible body pain,
@@ -47,14 +62,22 @@ symptoms:
   joint_pain:
     display: Joint pain
     aliases: [joint pain, joints hurt, aching joints, painful joints, arthralgia,
-              knee pain, jodo me dard]
+              knee pain, jodo me dard,
+              jointpain,
+              joints paining]
   muscle_pain:
     display: Muscle pain
     aliases: [muscle pain, muscle ache, sore muscles, myalgia, aching muscles]
   headache:
     display: Headache
     aliases: [headache, head ache, head pain, my head hurts, head is hurting,
-              sar dard, sir dard, pain in head]
+              sar dard, sir dard, pain in head,
+              sir me dard,
+              sardard,
+              tale novu,
+              thale novu,
+              thalai vali,
+              thala vali]
   severe_headache:
     display: Severe headache
     aliases: [severe headache, terrible headache, worst headache, splitting headache,
@@ -66,7 +89,11 @@ symptoms:
   dizziness:
     display: Dizziness
     aliases: [dizziness, dizzy, giddiness, giddy, lightheaded, light headed,
-              head spinning, chakkar, feeling faint, vertigo]
+              head spinning, chakkar, feeling faint, vertigo,
+              chakar,
+              chakkar aa raha,
+              head spin,
+              feeling head spin]
   sweating:
     display: Sweating
     aliases: [sweating, sweaty, perspiring, cold sweat, breaking out in sweat,
@@ -77,7 +104,11 @@ symptoms:
   loss_of_appetite:
     display: Loss of appetite
     aliases: [loss of appetite, no appetite, not hungry, cant eat, dont feel like eating,
-              appetite is gone, bhookh nahi]
+              appetite is gone, bhookh nahi,
+              bhook nahi lag rahi,
+              not able to eat,
+              cannot eat anything,
+              no apetite]
   rash:
     display: Skin rash
     aliases: [rash, skin rash, red spots, spots on skin, red patches, hives,
@@ -93,7 +124,10 @@ symptoms:
   # --- respiratory / ENT ----------------------------------------------------
   cough:
     display: Cough
-    aliases: [cough, coughing, khansi, cant stop coughing, been coughing]
+    aliases: [cough, coughing, khansi, cant stop coughing, been coughing,
+              khaansi,
+              kemmu,
+              irumal]
   dry_cough:
     display: Dry cough
     aliases: [dry cough, hacking cough, tickly cough, non productive cough,
@@ -114,7 +148,11 @@ symptoms:
   sore_throat:
     display: Sore throat
     aliases: [sore throat, throat pain, throat hurts, scratchy throat,
-              gala kharab, gale me dard, throat is sore, irritated throat]
+              gala kharab, gale me dard, throat is sore, irritated throat,
+              gala dard,
+              gale mein dard,
+              throat paining,
+              throat is paining]
   severe_sore_throat:
     display: Severe sore throat
     aliases: [severe sore throat, terrible sore throat, very painful throat,
@@ -123,7 +161,10 @@ symptoms:
     display: Painful swallowing
     aliases: [painful swallowing, hurts to swallow, pain when swallowing,
               cant swallow, difficulty swallowing, odynophagia, hard to swallow,
-              trouble swallowing, problem swallowing, difficulty in swallowing]
+              trouble swallowing, problem swallowing, difficulty in swallowing,
+              swallow difficult,
+              difficult to swallow,
+              pain while swallowing]
   tonsil_exudate:
     display: White patches on tonsils
     aliases: [white patches on tonsils, white spots on throat, pus on tonsils,
@@ -163,20 +204,31 @@ symptoms:
   loss_of_taste:
     display: Loss of taste
     aliases: [loss of taste, cant taste, no taste, food has no taste,
-              lost my sense of taste, ageusia]
+              lost my sense of taste, ageusia,
+              tastes like nothing,
+              cant taste anything,
+              everything tastes like nothing]
   shortness_of_breath:
     display: Shortness of breath
     aliases: [shortness of breath, short of breath, breathless, breathlessness,
               cant breathe, difficulty breathing, hard to breathe, out of breath,
               saans lene me takleef, dyspnoea, gasping,
-              trouble breathing, problem breathing, struggling to breathe]
+              trouble breathing, problem breathing, struggling to breathe,
+              breathing problem,
+              breathing problems,
+              breathing issue,
+              cant breathe properly,
+              not able to breathe,
+              breathing difficulty]
   wheezing:
     display: Wheezing
     aliases: [wheezing, wheeze, whistling in chest, whistling sound when breathing]
   chest_tightness:
     display: Chest tightness
     aliases: [chest tightness, tight chest, chest feels tight, heaviness in chest,
-              band around my chest]
+              band around my chest,
+              chest tight,
+              chest is tight]
   rapid_breathing:
     display: Fast breathing
     aliases: [rapid breathing, fast breathing, breathing quickly, panting,
@@ -203,7 +255,12 @@ symptoms:
   vomiting:
     display: Vomiting
     aliases: [vomiting, vomit, vomitings, throwing up, threw up, being sick,
-              puking, ulti, retching, sick everywhere]
+              puking, ulti, retching, sick everywhere,
+              ulty,
+              ultee,
+              vaanti,
+              vanti,
+              vaandhi]
   persistent_vomiting:
     display: Persistent vomiting
     aliases: [persistent vomiting, cant stop vomiting, vomiting everything,
@@ -216,7 +273,11 @@ symptoms:
     display: Diarrhoea
     aliases: [diarrhoea, diarrhea, loose motions, loose motion, motions, loose stools,
               runny stools, dast, upset stomach with motions, frequent stools,
-              going to the toilet a lot, loose potty]
+              going to the toilet a lot, loose potty,
+              daast,
+              pet kharab,
+              beedhi,
+              bedi]
   watery_diarrhoea:
     display: Watery diarrhoea
     aliases: [watery diarrhoea, watery diarrhea, watery motions, watery stools,
@@ -234,7 +295,12 @@ symptoms:
     display: Abdominal pain
     aliases: [abdominal pain, stomach pain, stomach ache, tummy pain, belly pain,
               pet dard, pet me dard, stomach hurts, pain in abdomen, gut pain,
-              stomach hurting, tummy hurting, belly hurting, pain in stomach, stomach is paining, stomach paining]
+              stomach hurting, tummy hurting, belly hurting, pain in stomach, stomach is paining, stomach paining,
+              hotte novu,
+              vayiru vali,
+              vayitru vali,
+              pet me dard hai,
+              stomach upset]
   severe_abdominal_pain:
     display: Severe abdominal pain
     aliases: [severe abdominal pain, severe stomach pain, terrible stomach pain,
@@ -250,7 +316,9 @@ symptoms:
   abdominal_cramps:
     display: Abdominal cramps
     aliases: [cramps, abdominal cramps, stomach cramps, cramping, tummy cramps,
-              griping pain, marod]
+              griping pain, marod,
+              stomach cramp,
+              stomach cramping]
   abdominal_tenderness:
     display: Tender abdomen
     aliases: [tender abdomen, stomach is tender, hurts when i press my stomach,
@@ -290,7 +358,9 @@ symptoms:
   chest_pain:
     display: Chest pain
     aliases: [chest pain, pain in chest, chest hurts, seene me dard,
-              pain in my chest]
+              pain in my chest,
+              chest paining,
+              chest is paining]
   chest_pain_radiating:
     display: Chest pain spreading to arm, jaw or back
     aliases: [chest pain radiating, chest pain spreading, pain going to my arm,

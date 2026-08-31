@@ -10,6 +10,7 @@ import re
 from dataclasses import dataclass
 
 from core import knowledge
+from core import fuzzy_match
 from core.negation import is_negated, split_clauses
 from core.text_norm import alias_pattern, canonicalise, expand_contractions
 
@@ -56,6 +57,17 @@ DURATION_UNITS = {
     "months": 720.0,
     "year": 8760.0,
     "years": 8760.0,
+    # Code-mixed units. "2din" fuses the numeral to the unit, which the
+    # numeric pattern already tolerates because the separator is \s* -- the
+    # unit simply had to exist for it to match at all.
+    "din": 24.0,        # Hindi
+    "dino": 24.0,
+    "dina": 24.0,       # Kannada
+    "naal": 24.0,       # Tamil
+    "night": 24.0,      # "from 2 nights" means two days, not twelve hours
+    "nights": 24.0,
+    "hafta": 168.0,     # Hindi: week
+    "hafte": 168.0,
 }
 
 WORD_NUMBERS = {
@@ -93,6 +105,13 @@ RELATIVE_DURATIONS = {
     "just now": 1.0,
     "since today": 8.0,
     "today": 8.0,
+    # Code-mixed relative phrases.
+    "kal": 24.0,          # Hindi: yesterday (also tomorrow; in a symptom
+                          # report the past reading is the only sensible one)
+    "kal se": 24.0,
+    "parso": 48.0,        # Hindi: day before yesterday
+    "ninne": 24.0,        # Kannada / Telugu: yesterday
+    "netru": 24.0,        # Tamil: yesterday
 }
 
 
@@ -189,7 +208,13 @@ def extract(text: str) -> list[ExtractedSymptom]:
     Later mentions do not overwrite earlier ones; a stated negative is kept
     rather than being dropped.
     """
-    normalised = normalise_for_matching(text)
+    # Repair spelling against the medical vocabulary BEFORE matching. Alias
+    # matching is exact, so "vometing" previously matched nothing at all --
+    # the extractor was silently blind to any word the user misspelt.
+    normalised = normalise_for_matching(fuzzy_match.repair(text))
+    # Duration is parsed from the original text: repair works on tokens and
+    # would not improve "3 days", while a mangled numeral would be worse than
+    # none.
     overall_duration = parse_duration_hours(text)
     found: dict[str, ExtractedSymptom] = {}
 

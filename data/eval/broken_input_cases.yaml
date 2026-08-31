@@ -1,0 +1,257 @@
+# Broken, code-mixed and low-literacy input.
+#
+# The existing set (nl_symptom_cases.yaml) is written in fluent English and the
+# extractor scores 100% on it. That number says the extractor handles the
+# phrasings its author anticipated -- it says nothing about what a real user in
+# an Indian clinic types. This set is deliberately adversarial: misspellings,
+# missing grammar, Hindi/Kannada/Tamil words, and durations written the way
+# people actually write them.
+#
+# Fields per case:
+#   text      what someone actually types
+#   present   symptom codes that MUST be extracted as present
+#   absent    codes that MUST be extracted as present=False
+#   forbid    codes that must NOT appear (false-positive guard)
+#   duration_hours  expected parsed duration, if stated
+#   note      why the case is hard
+#
+# Implied parents (high_fever -> fever) are accepted automatically.
+
+cases:
+
+  # --- misspellings and phonetic spelling ---------------------------------
+  - text: "stomac pain since morning"
+    present: [abdominal_pain]
+    note: "dropped h"
+
+  - text: "i have fewer and cough"
+    present: [fever, cough]
+    note: "fewer -> fever. A general spellchecker leaves this alone: 'fewer' is a word."
+
+  - text: "vometing since yesterday"
+    present: [vomiting]
+    duration_hours: 24
+    note: "phonetic"
+
+  - text: "dizzy feeling head spin"
+    present: [dizziness]
+    note: "colloquial description, no dictionary word for the symptom"
+
+  - text: "loose motion and vomitting"
+    present: [diarrhoea, vomiting]
+    note: "doubled consonant"
+
+  - text: "hedache since 2 days"
+    present: [headache]
+    duration_hours: 48
+
+  - text: "throat paining badly"
+    present: [sore_throat]
+    note: "Indian English verb form"
+
+  - text: "feavor and body pain"
+    present: [fever, body_ache]
+
+  - text: "diarhea 3 days"
+    present: [diarrhoea]
+    duration_hours: 72
+
+  - text: "coughf and cold"
+    present: [cough, runny_nose]
+
+  - text: "naussea and no apetite"
+    present: [nausea, loss_of_appetite]
+
+  - text: "sever headace"
+    present: [severe_headache]
+    note: "two misspellings, one modifying the other"
+
+  - text: "brething problem"
+    present: [shortness_of_breath]
+
+  - text: "chest paining"
+    present: [chest_pain]
+
+  - text: "jointpain and fevr"
+    present: [joint_pain, fever]
+    note: "missing space plus truncation"
+
+  # --- missing grammar and articles ---------------------------------------
+  - text: "head pain 3 day no sleep"
+    present: [headache]
+    duration_hours: 72
+    note: "telegraphic; 'no sleep' has no code and must not invent one"
+    forbid: [fatigue]
+
+  - text: "fever 2 day body pain also"
+    present: [fever, body_ache]
+    duration_hours: 48
+
+  - text: "stomach paining from yesterday night vomit 2 time"
+    present: [abdominal_pain, vomiting]
+
+  - text: "cough problem 1 week not reducing"
+    present: [cough]
+    duration_hours: 168
+
+  - text: "loose motion 4 time today stomach cramp"
+    present: [diarrhoea, abdominal_cramps]
+
+  - text: "throat pain swallow difficult"
+    present: [sore_throat, painful_swallowing]
+
+  # --- code-mixed: Hindi ---------------------------------------------------
+  - text: "pet dard since 2 days"
+    present: [abdominal_pain]
+    duration_hours: 48
+    note: "Hindi: pet = stomach, dard = pain"
+
+  - text: "jwar aur khansi"
+    present: [fever, cough]
+    note: "Hindi: jwar = fever, khansi = cough"
+
+  - text: "mujhe bukhar hai"
+    present: [fever]
+    note: "Hindi: bukhar = fever"
+
+  - text: "sir dard bahut zyada"
+    present: [headache]
+    note: "Hindi: sir dard = headache"
+
+  - text: "ulti ho rahi hai"
+    present: [vomiting]
+    note: "Hindi: ulti = vomiting"
+
+  - text: "dast lag gaye hain 2 din se"
+    present: [diarrhoea]
+    duration_hours: 48
+    note: "Hindi: dast = loose motions, din = day"
+
+  - text: "gala kharab hai aur bukhar"
+    present: [sore_throat, fever]
+    note: "Hindi: gala kharab = sore throat"
+
+  - text: "kamzori bahut lag rahi hai"
+    present: [weakness]
+    note: "Hindi: kamzori = weakness"
+
+  - text: "chakkar aa raha hai"
+    present: [dizziness]
+    note: "Hindi: chakkar = dizziness"
+
+  - text: "badan dard aur thakan"
+    present: [body_ache, fatigue]
+    note: "Hindi: badan dard = body ache, thakan = tiredness"
+
+  # --- code-mixed: Kannada -------------------------------------------------
+  - text: "tale novu since morning"
+    present: [headache]
+    note: "Kannada: tale novu = head pain"
+
+  - text: "hotte novu and vaanti"
+    present: [abdominal_pain, vomiting]
+    note: "Kannada: hotte novu = stomach pain, vaanti = vomiting"
+
+  - text: "jwara ide 2 dina"
+    present: [fever]
+    duration_hours: 48
+    note: "Kannada: jwara = fever, dina = day"
+
+  - text: "kemmu jaasti aagide"
+    present: [cough]
+    note: "Kannada: kemmu = cough"
+
+  # --- code-mixed: Tamil ---------------------------------------------------
+  - text: "vayiru vali since yesterday"
+    present: [abdominal_pain]
+    duration_hours: 24
+    note: "Tamil: vayiru vali = stomach pain"
+
+  - text: "kaichal and thalai vali"
+    present: [fever, headache]
+    note: "Tamil: kaichal = fever, thalai vali = headache"
+
+  - text: "irumal 3 naal"
+    present: [cough]
+    note: "Tamil: irumal = cough, naal = day"
+
+  # --- vague and colloquial ------------------------------------------------
+  - text: "body feels heavy and tired"
+    present: [fatigue]
+    note: "no clinical term used at all"
+
+  - text: "chest tight cant breathe properly"
+    present: [chest_tightness, shortness_of_breath]
+
+  - text: "feeling very weak whole day"
+    present: [weakness]
+
+  - text: "not able to eat anything"
+    present: [loss_of_appetite]
+
+  - text: "burning feeling in chest after food"
+    present: [heartburn, symptoms_worse_after_food]
+
+  - text: "stomach upset since morning"
+    present: [abdominal_pain]
+
+  - text: "head spinning when i stand"
+    present: [dizziness]
+
+  - text: "everything tastes like nothing"
+    present: [loss_of_taste]
+
+  # --- run-on and fragmented -----------------------------------------------
+  - text: "fever cough headache body pain all since 2 days not going"
+    present: [fever, cough, headache, body_ache]
+    duration_hours: 48
+
+  - text: "sir i have fever from 3 days and also cough and my body is paining a lot and no appetite please help"
+    present: [fever, cough, body_ache, loss_of_appetite]
+    duration_hours: 72
+
+  - text: "vomiting.loose motion.stomach pain.since night"
+    present: [vomiting, diarrhoea, abdominal_pain]
+    note: "full stops used as separators with no spaces"
+
+  - text: "fever    cough     cold"
+    present: [fever, cough, runny_nose]
+    note: "irregular whitespace"
+
+  # --- loose durations -----------------------------------------------------
+  - text: "fever since 2din"
+    present: [fever]
+    duration_hours: 48
+    note: "Hindi 'din' fused to the numeral"
+
+  - text: "cough since last week"
+    present: [cough]
+    duration_hours: 168
+
+  - text: "headache 3 days back started"
+    present: [headache]
+    duration_hours: 72
+
+  - text: "loose motion from 2 nights"
+    present: [diarrhoea]
+    duration_hours: 48
+
+  - text: "fever since kal"
+    present: [fever]
+    duration_hours: 24
+    note: "Hindi: kal = yesterday"
+
+  # --- negation must still survive the mess --------------------------------
+  - text: "fever hai but khansi nahi"
+    present: [fever]
+    absent: [cough]
+    note: "Hindi negation: nahi = no"
+
+  - text: "hedache yes but no vometing"
+    present: [headache]
+    absent: [vomiting]
+    note: "negation around a misspelling"
+
+  - text: "stomac pain no loose motion"
+    present: [abdominal_pain]
+    absent: [diarrhoea]

@@ -6,7 +6,16 @@ method is the same: label real phrasings, measure, fix the gaps, re-measure.
 
 Run from the backend directory:
     .venv/Scripts/python.exe -m tools.eval_extraction
-    .venv/Scripts/python.exe -m tools.eval_extraction --verbose
+    .venv/Scripts/python.exe -m tools.eval_extraction --broken
+    .venv/Scripts/python.exe -m tools.eval_extraction --broken --verbose
+
+Two datasets, deliberately kept apart:
+
+  nl_symptom_cases.yaml     fluent English, author-written
+  broken_input_cases.yaml   misspelt, code-mixed, ungrammatical
+
+Reporting them as one number would let a good score on fluent English hide a
+bad one on the input real users actually type.
 """
 import sys
 from dataclasses import dataclass, field
@@ -20,7 +29,10 @@ from config import DATA_DIR  # noqa: E402
 from core import knowledge  # noqa: E402
 from core.symptom_extraction import extract, parse_duration_hours  # noqa: E402
 
-DATASET = DATA_DIR / "eval" / "nl_symptom_cases.yaml"
+DATASETS = {
+    "fluent": DATA_DIR / "eval" / "nl_symptom_cases.yaml",
+    "broken": DATA_DIR / "eval" / "broken_input_cases.yaml",
+}
 DURATION_TOLERANCE = 0.01  # duration is computed, so require near-exact
 
 
@@ -77,8 +89,8 @@ def evaluate_case(case: dict) -> CaseResult:
     return result
 
 
-def main(verbose: bool = False) -> int:
-    with DATASET.open(encoding="utf-8") as fh:
+def main(verbose: bool = False, which: str = "fluent") -> int:
+    with DATASETS[which].open(encoding="utf-8") as fh:
         cases = yaml.safe_load(fh)["cases"]
 
     results = [evaluate_case(c) for c in cases]
@@ -98,8 +110,12 @@ def main(verbose: bool = False) -> int:
     def pct(hit: int, total_: int) -> str:
         return f"{100.0 * hit / total_:5.1f}%" if total_ else "  n/a"
 
+    label = {
+        "fluent": "fluent English (author-written)",
+        "broken": "broken / code-mixed / low-literacy",
+    }[which]
     print("=" * 72)
-    print("SYMPTOM EXTRACTION -- natural language evaluation")
+    print(f"SYMPTOM EXTRACTION -- {label}")
     print("=" * 72)
     print(f"cases passed fully      {passed}/{total}   {pct(passed, total)}")
     print(
@@ -148,4 +164,9 @@ def main(verbose: bool = False) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(verbose="--verbose" in sys.argv))
+    raise SystemExit(
+        main(
+            verbose="--verbose" in sys.argv,
+            which="broken" if "--broken" in sys.argv else "fluent",
+        )
+    )

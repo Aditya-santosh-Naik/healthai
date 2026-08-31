@@ -47,6 +47,25 @@ FORWARD_CUES = [
     "nor",
 ]
 
+# Postfix negation, where the cue FOLLOWS what it negates. English is almost
+# entirely prefix ("no cough"), so the forward-scope model above covers it, but
+# Hindi, Kannada and Tamil put the negator last: "khansi nahi" is literally
+# "cough not". A forward-only model reads that as a reported cough -- turning a
+# denial into a symptom, which is the most dangerous direction to be wrong in.
+#
+# Scope runs BACKWARDS from the cue to the start of the clause, mirroring the
+# forward rule.
+BACKWARD_CUES = [
+    "nahi hai",
+    "nahi",
+    "nahin",
+    "illa",      # Kannada / Tamil
+    "illai",     # Tamil
+    "ilve",      # Kannada colloquial
+    "iralla",    # Kannada
+]
+
+
 # Phrases that contain a cue but do not actually negate.
 PSEUDO_NEGATIONS = [
     "no doubt",
@@ -71,6 +90,11 @@ CLAUSE_SPLIT = re.compile(
 _CUE_PATTERNS = [
     (cue, re.compile(r"\b" + re.escape(cue) + r"\b"))
     for cue in sorted(FORWARD_CUES, key=len, reverse=True)
+]
+
+_BACKWARD_PATTERNS = [
+    re.compile(r"\b" + re.escape(cue) + r"\b")
+    for cue in sorted(BACKWARD_CUES, key=len, reverse=True)
 ]
 
 
@@ -115,6 +139,12 @@ def negation_spans(clause: str) -> list[tuple[int, int]]:
             if any(start <= match.start() < end for start, end in spans):
                 continue
             spans.append((match.end(), len(clause)))
+
+    # Postfix cues negate backwards, to the start of the clause.
+    for pattern in _BACKWARD_PATTERNS:
+        for match in pattern.finditer(masked):
+            spans.append((0, match.start()))
+
     return spans
 
 
