@@ -123,3 +123,45 @@ def test_specificity_is_bounded_and_a_generic_symptom_is_worth_less():
     # carry less weight. Asserting the relationship rather than the numbers,
     # which move whenever a condition is added.
     assert weights["fever"] < weights["retro_orbital_pain"]
+
+
+def test_specificity_weights_are_not_piled_against_the_ceiling():
+    """The weights must actually discriminate, not just rescale.
+
+    The clamped form saturated: 50 of 63 symptoms sat exactly on the 2.0 cap,
+    so four fifths of the vocabulary shared one weight and the multiplier was
+    close to a uniform x2. Only symptoms unique to a single condition should
+    reach the ceiling.
+    """
+    from core import knowledge, specificity
+
+    weights = specificity.compute()
+    conditions = knowledge.conditions()
+    at_ceiling = [c for c, w in weights.items() if w >= specificity.MAX_WEIGHT - 1e-9]
+
+    assert len(at_ceiling) < len(weights) / 2, (
+        f"{len(at_ceiling)} of {len(weights)} weights are at the ceiling; the "
+        "weighting has saturated and is no longer discriminating"
+    )
+    for code in at_ceiling:
+        n = sum(1 for cond in conditions.values() if code in cond.all_symptoms)
+        assert n == 1, f"{code} is in {n} conditions but scores the maximum weight"
+
+
+def test_a_symptom_in_more_conditions_never_scores_higher():
+    """The weight must be monotone in how widely a symptom is shared."""
+    from core import knowledge, specificity
+
+    weights = specificity.compute()
+    conditions = knowledge.conditions()
+    counts = {
+        code: sum(1 for c in conditions.values() if code in c.all_symptoms)
+        for code in weights
+    }
+    ordered = sorted(weights, key=lambda code: counts[code])
+    for earlier, later in zip(ordered, ordered[1:]):
+        if counts[earlier] < counts[later]:
+            assert weights[earlier] >= weights[later], (
+                f"{earlier} (in {counts[earlier]}) scores less than "
+                f"{later} (in {counts[later]})"
+            )

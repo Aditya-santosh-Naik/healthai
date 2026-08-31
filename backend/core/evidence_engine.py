@@ -49,23 +49,27 @@ BASE_RATE_PRIOR = {
 # multiplier; carrying them over unchanged would have made almost everything
 # `most_consistent`, replacing over-diagnosis with over-confidence.
 #
-# Measured over all 96 eval cases with the new scoring:
+# Re-measured over all 96 eval cases after the specificity formula was
+# normalised (see core.specificity, FORMULA_VERSION 2). Spreading the weights
+# off the ceiling lowered most of them, so every score and lead came down and
+# the previous cutoffs had drifted too high -- a full influenza picture landed
+# on `possible` purely because the thresholds still described the old range.
 #
-#   TOP score per case      p25  2.49   p50  6.04   p75 11.30   p85 13.94   p90 15.53
-#   LEAD over runner-up     p25  0.49   p50  2.00   p70  4.00   p80  6.00   p85  8.00
+#   TOP score per case      p25  2.39   p50  4.94   p75  9.07   p85 11.38   p90 13.26
+#   LEAD over runner-up     p25  0.25   p50  1.25   p70  4.00   p80  5.80   p85  6.75
 #
 # POSSIBLE_MIN_SCORE is not read off that table. It is anchored: it must be
 # strictly greater than the largest base rate prior (very_common = 4.0), or a
 # cold would qualify as "possible" on prevalence alone with no evidence at all.
-# 6.0 is the smallest round value that clears it with real evidence to spare,
-# and it happens to land on the median top score.
+# 6.0 is the smallest round value that clears it with real evidence to spare.
+# A test asserts that relationship so the two cannot drift apart.
 POSSIBLE_MIN_SCORE = 6.0
 
-# p85 of top scores and p80 of leads. Reserves the strongest band for roughly
-# the top sixth of cases -- appropriate for a system whose claim is that it
-# declines to be certain rather than that it usually is.
-MOST_CONSISTENT_MIN_SCORE = 14.0
-MOST_CONSISTENT_MIN_LEAD = 6.0
+# p85 of top scores, and just under p80 of leads. Reserves the strongest band
+# for roughly the top sixth of cases -- appropriate for a system whose claim is
+# that it declines to be certain rather than that it usually is.
+MOST_CONSISTENT_MIN_SCORE = 11.5
+MOST_CONSISTENT_MIN_LEAD = 5.5
 
 # p70 of leads. Below this the top two candidates are not meaningfully
 # separated, so the honest outcome is to say so rather than to rank them.
@@ -192,12 +196,27 @@ def score_candidate(
 
     already_missing = {entry.symptom_code for entry in missing}
     for code in condition.expected:
-        if code not in present:
-            entry = item(code, "expected_absent", EXPECTED_ABSENT_PENALTY)
-            # A denied hallmark that is also an expected symptom already
-            # appears above; listing it twice reads as "Runny nose, Runny nose".
-            if code not in already_missing:
-                missing.append(entry)
+        if code in present:
+            continue
+        # Note: an unmentioned expected symptom is penalised the same as a
+        # denied one. That is arguably wrong -- "I don't have a runny nose"
+        # and "nobody asked me" are different evidence -- and halving the
+        # penalty for silence did measurably improve one ranking: a bare
+        # "cough" put common cold first instead of acute bronchitis.
+        #
+        # It was reverted anyway. Raising every condition's floor compressed
+        # the gap between leader and runner-up across the board, so the
+        # confident band became unreachable and a full ten-question history
+        # ended on "possible". Recovering it meant re-tuning the band cutoffs
+        # a third time, and thresholds chased to rescue a change are how a
+        # scoring model stops being explainable. Revisit with the eval set
+        # extended to cover sparse openings, where the effect could actually
+        # be measured rather than argued.
+        entry = item(code, "expected_absent", EXPECTED_ABSENT_PENALTY)
+        # A denied hallmark that is also an expected symptom already
+        # appears above; listing it twice reads as "Runny nose, Runny nose".
+        if code not in already_missing:
+            missing.append(entry)
 
     for code in condition.contradictory:
         if code in present:

@@ -149,10 +149,20 @@ score = base_rate_prior
 `very_common` +4, `common` +2, `uncommon` 0, `rare` −3. Declared per condition
 in YAML, author judgement, disclosed in the README limitations.
 
-**The specificity weight** is `clamp(0.5 + ln(N / n), 0.5, 2.0)`, where `n` is
+**The specificity weight** is `0.5 + 1.5 × ln(N / n) / ln(N)`, where `n` is
 how many of the `N` conditions list that symptom. Derived from the knowledge
 base, never hand-set. It is what stops `fever` — which half the conditions
 claim — counting the same as `retro_orbital_pain`, which exactly one does.
+
+Dividing by `ln(N)` rather than clamping matters at this scale. The clamped
+form, `clamp(0.5 + ln(N/n), 0.5, 2.0)`, saturated: with only 14 conditions it
+hit the ceiling for any symptom in three or fewer, which was **50 of the 63
+symptoms in use**. Four fifths of the vocabulary shared one weight, so the
+weighting was close to a uniform ×2 rescale. Normalising maps the range onto
+`[0.5, 2.0]` by construction — `n=1` lands exactly on the maximum, `n=N`
+exactly on the minimum — and ceiling occupancy fell to 28, all of them symptoms
+genuinely unique to one condition. Tests assert both that the ceiling is not
+crowded and that the weight is monotone in `n`.
 
 **The evidence values** are unchanged in magnitude — hallmark +3, supporting
 +1, expected absent −2, contradictory −3, context ±1, duration mismatch −1 —
@@ -161,15 +171,17 @@ but each is multiplied by that symptom's specificity weight.
 Bands compare the leader to the runner-up, not the absolute score alone:
 
 ```
-top < 6, or (top − second) ≤ 4    →  insufficient_information
-top ≥ 14 and (top − second) ≥ 6   →  most_consistent
-top ≥ 6                           →  possible
-otherwise                         →  less_consistent
+top < 6, or (top − second) ≤ 4     →  insufficient_information
+top ≥ 11.5 and (top − second) ≥ 5.5 →  most_consistent
+top ≥ 6                             →  possible
+otherwise                           →  less_consistent
 ```
 
 These cutoffs were measured, not guessed: across all 96 eval cases the top
-score per case runs p25 2.49 / p50 6.04 / p85 13.94, and the lead over the
-runner-up p50 2.00 / p80 6.00. The `possible` threshold is additionally
+score per case runs p25 2.39 / p50 4.94 / p85 11.38, and the lead over the
+runner-up p50 1.25 / p80 5.80. They were re-derived when the specificity
+formula changed — a scoring change that leaves the thresholds alone silently
+moves every band. The `possible` threshold is additionally
 anchored — it must exceed the largest prior (4.0), or a cold would qualify on
 prevalence alone with no evidence at all. A test asserts that relationship so
 the two cannot drift apart.

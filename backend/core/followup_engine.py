@@ -178,6 +178,27 @@ def _gain(code: str, condition, answered_yes: bool) -> float:
     a contradictory symptom only penalises when it is PRESENT, so answering
     "no" to it changes nothing. A hallmark, by contrast, moves the score
     either way -- up if reported, down if explicitly denied.
+
+    Deliberately NOT scaled by specificity, even though
+    evidence_engine.score_candidate is.
+
+    Scaling it here looks like an obvious consistency fix -- this predicts how
+    the score will move, so it should use the scorer's formula -- and it was
+    tried. It made the outcomes worse, measurably: a full ten-question history
+    that previously reached `most_consistent` ended on `possible`.
+
+    The reason is that the two are optimising different things. Weighting by
+    specificity pushes the selector towards rare, highly specific symptoms,
+    which are precisely the ones almost every patient denies. Those answers
+    exclude conditions but build no case for the leader, so the budget is spent
+    ruling things out while the gap over the runner-up never widens. The
+    unweighted form favours the leader's own hallmarks, which is the
+    confirmatory question a clinician actually asks, and reaching a verdict
+    needs confirmation rather than more exclusion.
+
+    Revisit only with an eval that scores question QUALITY -- did the
+    consultation reach a supported verdict, in how many questions -- rather
+    than final ranking, which is what the current eval set measures.
     """
     if answered_yes:
         if code in condition.hallmark:

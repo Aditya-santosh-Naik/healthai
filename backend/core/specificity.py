@@ -61,33 +61,77 @@ def compute() -> dict[str, float]:
         for code in condition.all_symptoms:
             counts[code] = counts.get(code, 0) + 1
 
+    # Normalised by ln(N) rather than clamped at a ceiling.
+    #
+    # The clamped form, 0.5 + ln(N/n), saturates badly at this scale: with
+    # N=14 it reaches the 2.0 cap for any symptom in three or fewer
+    # conditions, which was 50 of the 63 symptoms in use. Four fifths of the
+    # vocabulary shared one weight, so the "weighting" was mostly a uniform
+    # x2 rescale, and `fever` at 1.35 sat closer to `retro_orbital_pain` at
+    # 2.0 than the difference between them deserves.
+    #
+    # Dividing by ln(N) maps the range onto [MIN, MAX] by construction:
+    # n=1 (unique to one condition) lands exactly on MAX, n=N (in every
+    # condition, carrying no information) exactly on MIN, and everything
+    # between is spread instead of piled against the ceiling. The clamp stays
+    # as a guard for n outside 1..N, not as the shaping mechanism.
+    span = MAX_WEIGHT - MIN_WEIGHT
+    scale = math.log(total) if total > 1 else 1.0
     return {
-        code: round(_clamp(BASE_WEIGHT + math.log(total / n)), 4)
+        code: round(_clamp(MIN_WEIGHT + span * (math.log(total / n) / scale)), 4)
         for code, n in sorted(counts.items())
     }
 
 
-def _cache_is_stale() -> bool:
-    if not CACHE_PATH.exists():
+# Bump when the formula or its bounds change. Watching the YAML timestamps
+# catches new knowledge but NOT a changed formula -- editing this module would
+# otherwise leave every install serving weights from the previous shape, and
+# the only symptom would be slightly wrong rankings.
+FORMULA_VERSION = 2
+
+
+def _cache_is_stale(cached: dict | None) -> bool:
+    if cached is None or cached.get("formula_version") != FORMULA_VERSION:
         return True
     cached_at = CACHE_PATH.stat().st_mtime
-    condition_files = (DATA_DIR / "conditions").glob("*.yaml")
-    return any(path.stat().st_mtime > cached_at for path in condition_files)
+    return any(
+        path.stat().st_mtime > cached_at
+        for path in (DATA_DIR / "conditions").glob("*.yaml")
+    )
 
 
-def _load() -> dict[str, float]:
-    if _cache_is_stale():
-        weights = compute()
-        CACHE_PATH.write_text(
-            json.dumps(weights, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-        )
-        return weights
+def _read_cache() -> dict | None:
     try:
-        return json.loads(CACHE_PATH.read_text(encoding="utf-8"))
+        payload = json.loads(CACHE_PATH.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         # A corrupt cache must never take the engine down: it is a derived
         # artefact, so recomputing costs microseconds.
-        return compute()
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _write_cache(weights: dict[str, float]) -> None:
+    CACHE_PATH.write_text(
+        json.dumps(
+            {"formula_version": FORMULA_VERSION, "weights": weights},
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def _load() -> dict[str, float]:
+    cached = _read_cache()
+    if _cache_is_stale(cached):
+        weights = compute()
+        try:
+            _write_cache(weights)
+        except OSError:
+            pass  # a read-only data dir is not a reason to fail a consultation
+        return weights
+    return cached["weights"]
 
 
 _WEIGHTS: dict[str, float] | None = None
@@ -112,9 +156,7 @@ def reset_cache() -> None:
 
 if __name__ == "__main__":  # pragma: no cover - operator convenience
     computed = compute()
-    CACHE_PATH.write_text(
-        json.dumps(computed, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
-    print(f"Wrote {CACHE_PATH} ({len(computed)} symptoms)\n")
+    _write_cache(computed)
+    print(f"Wrote {CACHE_PATH} ({len(computed)} symptoms, v{FORMULA_VERSION})\n")
     for code, value in sorted(computed.items(), key=lambda kv: (-kv[1], kv[0])):
         print(f"  {value:5.2f}  {code}")

@@ -162,11 +162,28 @@ def test_onboarding_creates_related_rows_with_provenance(client):
             assert row["confirmed_at"] is not None
 
 
-def test_under_18_is_refused_at_the_schema_boundary(client):
-    """Spec invariant 9: under-18 is out of scope, and must be unrepresentable."""
+def test_under_18_can_register_but_is_refused_a_consultation(client):
+    """Spec invariant 9: under-18 is out of scope. The refusal MOVED, in full.
+
+    It used to be a 422 at the schema boundary, which made the state
+    unrepresentable but told a 15-year-old only that their age was "invalid".
+    Registration now accepts them; the scope guard refuses at pipeline step 0,
+    every time, with an explanation and a paediatric referral. That is where
+    the clinical rule belongs -- and it is enforced per consultation rather
+    than once at signup, so it cannot be bypassed by editing a profile later.
+    """
     token = register(client)
-    payload = {**VALID_PROFILE, "age": 12}
-    assert client.post("/api/profile", json=payload, headers=auth(token)).status_code == 422
+    child = {**VALID_PROFILE, "age": 12}
+    assert client.post("/api/profile", json=child, headers=auth(token)).status_code == 201
+
+    r = client.post(
+        "/api/consultation/start", json={"text": "fever and cough"}, headers=auth(token)
+    )
+    assert r.status_code in (200, 201), r.text
+    body = r.json()
+    assert body["outcome"] == "refused", "a 12-year-old was assessed"
+    assert body["refusal"]["category"] == "under_18"
+    assert body["candidates"] == [], "a refusal must name no condition"
 
 
 def test_one_user_one_profile(client):

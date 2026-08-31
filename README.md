@@ -208,7 +208,7 @@ built:
 .venv\Scripts\python.exe -m pytest tests -q
 ```
 
-86 tests should pass.
+174 tests should pass.
 
 ---
 
@@ -428,16 +428,20 @@ Stated plainly, because they matter more than the feature list:
 - **The evidence weights are unfitted constants.** +3 for a hallmark and the
   0.5–2.0 specificity clamp are reasoned choices, not values learned from
   outcome data. The specificity weights themselves are derived from the
-  knowledge base rather than hand-set, but with only 14 conditions the
-  inverse-frequency term saturates: 50 of the 63 symptoms in use sit at the
-  2.0 ceiling, so the weighting separates the genuinely generic symptoms from
-  the rest and does little beyond that. It would discriminate more finely
-  across a larger condition set.
+  knowledge base rather than hand-set. With only 14 conditions the
+  inverse-frequency term is normalised by `ln(N)` rather than clamped, because
+  the clamped form saturated — 50 of the 63 symptoms sat on the ceiling. After
+  normalising, 28 do, and all of those are symptoms unique to a single
+  condition. It would still discriminate more finely across a larger condition
+  set.
 - **Not a medical device**, not intended for clinical use, not validated
   against patient outcomes.
 - **14 conditions only.** Anything outside that set will not be recognised.
 - **Adults only.** Under-18, pregnancy and mental-health crisis are refused by
-  design.
+  design. Registration accepts ages 1-122 as a data-integrity range, but the
+  scope guard refuses a consultation for anyone under 18 on every turn, with a
+  paediatric referral. The clinical rule is enforced per consultation rather
+  than once at signup, so editing a profile afterwards cannot bypass it.
 - **English only.** Hinglish appears only as aliases in the symptom vocabulary.
 - **No OCR.** Text-layer PDFs only; scanned documents get a clear message.
 - **No encryption at rest.** The SQLite file is unencrypted. The JWT signing
