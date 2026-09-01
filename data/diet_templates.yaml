@@ -70,7 +70,9 @@ conditions:
   influenza:
     source_url: https://medlineplus.gov/flu.html
     prefer:
-      - text: Easily digested food - khichdi, curd rice, upma, or plain toast.
+      - text: Easily digested food - khichdi, upma, or plain toast.
+        tags: []
+      - text: Curd rice as well, if dairy suits you.
         tags: [contains_dairy]
       # "Clear broth" on its own reads as meat stock, and this entry carried no
       # tags, so a vegan influenza patient was told to drink it. Naming the
@@ -106,8 +108,12 @@ conditions:
   covid19:
     source_url: https://www.who.int/health-topics/coronavirus
     prefer:
-      - text: Protein-rich food to support recovery - dal, paneer, eggs, or sprouts.
-        tags: [contains_dairy, contains_egg]
+      - text: Protein-rich food to support recovery - dal, sprouts, or soya.
+        tags: []
+      - text: Paneer as well, if dairy suits you.
+        tags: [contains_dairy]
+      - text: Eggs as well, if you eat them.
+        tags: [contains_egg]
       - text: Warm fluids and light, home-cooked meals.
         tags: []
       - text: Strongly flavoured food if taste is affected, so eating stays appealing.
@@ -164,7 +170,9 @@ conditions:
   pneumonia:
     source_url: https://medlineplus.gov/pneumonia.html
     prefer:
-      - text: Nourishing, easy food - dal, khichdi, soups, curd.
+      - text: Nourishing, easy food - dal, khichdi and soups.
+        tags: []
+      - text: Curd as well, if dairy suits you.
         tags: [contains_dairy]
       - text: Small frequent meals while your appetite is poor.
         tags: []
@@ -191,7 +199,9 @@ conditions:
   strep_pharyngitis:
     source_url: https://www.cdc.gov/group-a-strep/about/strep-throat.html
     prefer:
-      - text: Soft, cool or lukewarm food - curd, custard, dal khichdi, mashed banana.
+      - text: Soft, cool or lukewarm food - dal khichdi or mashed banana.
+        tags: []
+      - text: Curd or custard as well, if dairy suits you.
         tags: [contains_dairy]
       - text: Warm salt water gargles several times a day.
         tags: []
@@ -249,7 +259,9 @@ conditions:
     prefer:
       - text: Plenty of fluids - ORS, coconut water, nimbu pani, thin dal water.
         tags: [high_potassium]
-      - text: Soft, light food - khichdi, curd rice, banana, upma.
+      - text: Soft, light food - khichdi, banana, upma.
+        tags: []
+      - text: Curd rice as well, if dairy suits you.
         tags: [contains_dairy]
       - text: Papaya and pomegranate are commonly taken; they are safe, though not a treatment.
         tags: [high_sugar]
@@ -276,8 +288,12 @@ conditions:
   typhoid:
     source_url: https://www.who.int/news-room/fact-sheets/detail/typhoid
     prefer:
-      - text: Soft, low-fibre food while the gut is inflamed - khichdi, curd rice, banana, boiled potato.
-        tags: [contains_dairy, contains_root]
+      - text: Soft, low-fibre food while the gut is inflamed - khichdi and banana.
+        tags: []
+      - text: Curd rice as well, if dairy suits you.
+        tags: [contains_dairy]
+      - text: Boiled potato as well, if you eat root vegetables.
+        tags: [contains_root]
       - text: Small frequent meals with adequate calories.
         tags: []
       - text: Only boiled or properly filtered water.
@@ -334,7 +350,9 @@ conditions:
     prefer:
       - text: Small, frequent meals instead of large ones.
         tags: []
-      - text: Bland, low-fat food - dal chawal, khichdi, idli, curd.
+      - text: Bland, low-fat food - dal chawal, khichdi, idli.
+        tags: []
+      - text: Curd as well, if dairy suits you.
         tags: [contains_dairy]
       - text: Cold milk or plain curd, which some people find settles the burning.
         tags: [contains_dairy]
@@ -371,8 +389,12 @@ conditions:
   gastritis:
     source_url: https://medlineplus.gov/gastritis.html
     prefer:
-      - text: Bland, soft food - khichdi, curd rice, banana, boiled vegetables.
-        tags: [contains_dairy, contains_root]
+      - text: Bland, soft food - khichdi and banana.
+        tags: []
+      - text: Curd rice as well, if dairy suits you.
+        tags: [contains_dairy]
+      - text: Well-cooked vegetables such as bottle gourd or carrot.
+        tags: [contains_root]
       - text: Small frequent meals so the stomach is never completely empty.
         tags: []
       - text: Plain curd or buttermilk, which many people find soothing.
@@ -406,7 +428,9 @@ conditions:
     prefer:
       - text: ORS after every loose stool. This is the most important thing you can do.
         tags: []
-      - text: Bananas, rice, curd rice, khichdi, and toast as your appetite returns.
+      - text: Bananas, rice, khichdi and toast as your appetite returns.
+        tags: []
+      - text: Curd rice as well, if dairy suits you.
         tags: [contains_dairy]
       - text: Coconut water and thin dal water.
         tags: [high_potassium]

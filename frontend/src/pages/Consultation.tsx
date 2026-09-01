@@ -153,6 +153,11 @@ export default function Consultation() {
                   size="sm"
                   onClick={() => void send(e)}
                   disabled={busy}
+                  // The shadcn Button is whitespace-nowrap by default, which is
+                  // right for "Save" and wrong for a full sentence: on a phone
+                  // these example prompts ran off the screen and took the whole
+                  // page sideways with them.
+                  className="h-auto max-w-full whitespace-normal py-1.5 text-left"
                 >
                   {e}
                 </Button>

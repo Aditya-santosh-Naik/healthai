@@ -34,13 +34,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-muted/30">
       <header className="border-b bg-background">
-        <div className="mx-auto flex h-16 w-full max-w-5xl items-center gap-6 px-6">
-          <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
+        {/* min-w-0 lets the nav below shrink instead of forcing the row wider
+            than the screen. Without it a flex child refuses to go below its
+            content width and the whole page scrolls sideways: at 375px the
+            document was 714px wide. */}
+        <div className="mx-auto flex h-16 w-full max-w-5xl min-w-0 items-center gap-3 px-4 sm:gap-6 sm:px-6">
+          <Link
+            to="/"
+            className="flex shrink-0 items-center gap-2 font-semibold tracking-tight"
+          >
             <Activity className="h-5 w-5 text-primary" />
-            HealthAI
+            <span className="hidden sm:inline">HealthAI</span>
           </Link>
 
-          <nav className="flex items-center gap-1 text-sm">
+          {/* Scrolls within itself on a phone rather than pushing the page
+              wide. Every destination stays reachable, which a collapsed
+              hamburger would also achieve but at the cost of a new component
+              the spec says not to build. */}
+          <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {NAV.map((item) => (
               <NavLink
                 key={item.to}
@@ -48,7 +59,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 end={item.end}
                 className={({ isActive }) =>
                   cn(
-                    "rounded-md px-3 py-1.5 transition-colors",
+                    "shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 transition-colors",
                     isActive
                       ? "bg-accent text-accent-foreground"
                       : "text-muted-foreground hover:text-foreground",
@@ -60,16 +71,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex shrink-0 items-center gap-3">
+            {/* The name is the first thing worth losing on a narrow screen:
+                the user knows who they are, and Sign out must stay reachable. */}
             {profile && (
-              <span className="text-sm text-muted-foreground">{profile.name}</span>
+              <span className="hidden text-sm text-muted-foreground sm:inline">
+                {profile.name}
+              </span>
             )}
             <button
               onClick={handleLogout}
               className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
-              <LogOut className="h-4 w-4" />
-              Sign out
+              <LogOut className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">Sign out</span>
             </button>
           </div>
         </div>

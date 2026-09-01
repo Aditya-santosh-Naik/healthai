@@ -138,6 +138,28 @@ def check_every_condition_has_guidance() -> list[str]:
     return gaps
 
 
+def check_guidance_survives_dietary_filtering() -> list[str]:
+    """Personalisation must not strip a diet down to nothing.
+
+    Tags apply to a whole sentence, so one dairy word removed an entire
+    suggestion: "Bland, soft food - khichdi, curd rice, banana, boiled
+    vegetables" was dropped whole for a vegan, taking khichdi and banana with
+    it, and a vegan with gastritis was left with a single line. Filtering that
+    correct is still advice that is useless.
+    """
+    thin: list[str] = []
+    for code in knowledge.conditions():
+        for diet in ("non_veg", "veg", "vegan", "jain"):
+            plan = diet_lifestyle.build([code], diet_type=diet)
+            prefer = [
+                r for r in plan.recommendations
+                if r.category == diet_lifestyle.Category.DIET_PREFER
+            ]
+            if len(prefer) < 2:
+                thin.append(f"{code} / {diet}: only {len(prefer)} dietary suggestion(s)")
+    return thin
+
+
 def check_diagnosis() -> tuple[int, int, list[str]]:
     """Labelled ranking cases. Returns (passed, total, failures)."""
     if not DIAGNOSIS_SET.exists():
@@ -170,6 +192,7 @@ def main(verbose: bool = False) -> int:
     diag_passed, diag_total, diag_failures = check_diagnosis()
     diet_violations = check_diet_consistency()
     coverage_gaps = check_every_condition_has_guidance()
+    thin_diets = check_guidance_survives_dietary_filtering()
 
     def pct(hit: int, total: int) -> str:
         return f"{100.0 * hit / total:5.1f}%" if total else "  n/a"
@@ -180,6 +203,7 @@ def main(verbose: bool = False) -> int:
     print(f"diagnosis ranking       {diag_passed}/{diag_total}   {pct(diag_passed, diag_total)}")
     print(f"diet contradictions     {len(diet_violations)}   (must be 0)")
     print(f"guidance coverage gaps  {len(coverage_gaps)}   (must be 0)")
+    print(f"diets stripped too thin {len(thin_diets)}   (must be 0)")
     print(f"elapsed                 {time.perf_counter() - started:.2f}s")
     print()
 
@@ -187,6 +211,7 @@ def main(verbose: bool = False) -> int:
         ("DIAGNOSIS FAILURES", diag_failures),
         ("DIET CONTRADICTIONS", sorted(set(diet_violations))),
         ("COVERAGE GAPS", coverage_gaps),
+        ("DIETS STRIPPED TOO THIN", thin_diets),
     ):
         if items:
             print(f"--- {len(items)} {title} ---")
@@ -196,7 +221,7 @@ def main(verbose: bool = False) -> int:
                 print(f"  ... and {len(items) - 15} more (--verbose for all)")
             print()
 
-    ok = not (diag_failures or diet_violations or coverage_gaps)
+    ok = not (diag_failures or diet_violations or coverage_gaps or thin_diets)
     if ok:
         print("All clinical checks pass.")
     return 0 if ok else 1

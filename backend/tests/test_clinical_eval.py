@@ -30,6 +30,17 @@ def test_every_condition_produces_usable_guidance():
     assert not gaps, "\n".join(gaps)
 
 
+def test_filtering_never_strips_a_diet_down_to_nothing():
+    """A vegan with gastritis used to get one dietary suggestion.
+
+    Tags apply per sentence, so one dairy word dropped khichdi and banana
+    along with the curd. Correct filtering that leaves nothing useful is still
+    a failure of the feature.
+    """
+    thin = eval_clinical.check_guidance_survives_dietary_filtering()
+    assert not thin, "\n".join(thin)
+
+
 def test_diagnosis_ranking_matches_the_labelled_set():
     passed, total, failures = eval_clinical.check_diagnosis()
     assert total > 0, "the labelled diagnosis set is missing or empty"

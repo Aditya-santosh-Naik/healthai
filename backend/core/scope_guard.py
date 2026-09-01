@@ -61,6 +61,37 @@ PAEDIATRIC = [
 
 MIN_ADULT_AGE = 18
 
+# Ages the user states about THEMSELVES, in text.
+#
+# Every PAEDIATRIC pattern above is third-person -- "my son", "my 12-year-old".
+# A teenager describing their own symptoms matched none of them and was
+# assessed as whatever the profile said, which is the realistic failure: a
+# child using a parent's phone, on a profile that says 48. The profile age is
+# the primary guard and it is unchanged; this is the case it cannot see.
+#
+# Matched numerically rather than by pattern alone, so "i am 45" is not caught
+# and "I have had this cough for 14 years" -- a duration, not an age -- does
+# not read as a child.
+_SELF_AGE = [
+    re.compile(r"\bi\s*(?:'?m|\s+am)\s+(?:only\s+)?(\d{1,2})\b(?!\s*(?:day|week|month|year)s?\b)"),
+    re.compile(r"\bi\s*(?:'?m|\s+am)\s+(?:only\s+)?(\d{1,2})\s*(?:years?|yrs?)\s*old\b"),
+    re.compile(r"\b(?:age|aged)\s*(?:is\s*)?(\d{1,2})\b"),
+    re.compile(r"\b(\d{1,2})\s*(?:years?|yrs?)[\s-]*old\s+(?:boy|girl|male|female|kid|child|student)\b"),
+]
+
+
+def stated_age(text: str) -> int | None:
+    """The youngest age the user states about themselves, if any.
+
+    Youngest rather than first: if a message contains several numbers, the
+    safest reading is the one that would refuse.
+    """
+    found: list[int] = []
+    for pattern in _SELF_AGE:
+        found.extend(int(m.group(1)) for m in pattern.finditer(text))
+    plausible = [a for a in found if 0 < a <= 120]
+    return min(plausible) if plausible else None
+
 
 def check(text: str, patient_age: int | None = None) -> ScopeRefusal | None:
     """Return a refusal if the request is out of scope, else None."""
@@ -113,7 +144,17 @@ def check(text: str, patient_age: int | None = None) -> ScopeRefusal | None:
             resources=[],
         )
 
-    if patient_age is not None and patient_age < MIN_ADULT_AGE:
+    # A stated age overrides the profile, and only ever downwards. Someone
+    # typing "I am 14" on a profile that says 48 is the case the profile
+    # cannot see -- a child on a parent's account -- and believing the profile
+    # there would assess a minor. The reverse is not honoured: an adult age in
+    # the text does not unlock a profile that says 12.
+    spoken = stated_age(text)
+    effective_age = min(
+        [a for a in (patient_age, spoken) if a is not None], default=None
+    )
+
+    if effective_age is not None and effective_age < MIN_ADULT_AGE:
         return ScopeRefusal(
             category="under_18",
             message=(
