@@ -466,3 +466,292 @@ interactions:
     severity: caution
     reason: This antimalarial can lower the seizure threshold.
     source_url: https://medlineplus.gov/druginfo/meds/a682318.html
+
+  # --- metronidazole ---------------------------------------------------------
+  # The reason ProfileFacts.safety_conditions exists. Alcohol is a boolean on
+  # the profile, so this rule was inexpressible before.
+  - subject: metronidazole
+    object: alcohol use
+    type: drug_condition
+    severity: avoid
+    reason: >-
+      Metronidazole with alcohol can cause severe flushing, vomiting and a
+      pounding headache. The advice is to avoid alcohol during the course and
+      for a couple of days afterwards.
+    source_url: https://medlineplus.gov/druginfo/meds/a689011.html
+
+  - subject: metronidazole
+    object: liver disease
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Metronidazole is cleared by the liver, so the dose may need adjusting in
+      liver disease. Your doctor should know.
+    source_url: https://medlineplus.gov/druginfo/meds/a689011.html
+
+  # --- statins ---------------------------------------------------------------
+  - subject: rosuvastatin
+    object: clarithromycin
+    type: drug_drug
+    severity: avoid
+    reason: >-
+      Clarithromycin raises statin levels, which increases the risk of muscle
+      damage. Prescribers usually pause the statin during the antibiotic
+      course.
+    source_url: https://medlineplus.gov/druginfo/meds/a603033.html
+
+  - subject: rosuvastatin
+    object: liver disease
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Statins are processed by the liver and liver function is normally checked
+      before and during treatment.
+    source_url: https://medlineplus.gov/druginfo/meds/a603033.html
+
+  - subject: rosuvastatin
+    object: alcohol use
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Regular alcohol alongside a statin adds to the strain on the liver. Worth
+      mentioning to your doctor so liver function can be monitored.
+    source_url: https://medlineplus.gov/druginfo/meds/a603033.html
+
+  # --- sulfonylureas ---------------------------------------------------------
+  - subject: glibenclamide
+    object: alcohol use
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Alcohol can make blood sugar drop further on a sulfonylurea, and the
+      warning signs of a low can be mistaken for being drunk.
+    source_url: https://medlineplus.gov/druginfo/meds/a684058.html
+
+  - subject: glibenclamide
+    object: ciprofloxacin
+    type: drug_drug
+    severity: caution
+    reason: >-
+      This antibiotic can push blood sugar lower on a sulfonylurea. Monitor
+      more closely during the course.
+    source_url: https://medlineplus.gov/druginfo/meds/a684058.html
+
+  - subject: glibenclamide
+    object: kidney disease
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Reduced kidney function makes low blood sugar more likely and longer
+      lasting on a sulfonylurea.
+    source_url: https://medlineplus.gov/druginfo/meds/a684058.html
+
+  - subject: glibenclamide
+    object: prednisolone
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Steroids raise blood sugar and work against the sulfonylurea, so diabetes
+      control often needs review during a steroid course.
+    source_url: https://medlineplus.gov/druginfo/meds/a601102.html
+
+  # --- domperidone -----------------------------------------------------------
+  - subject: domperidone
+    object: clarithromycin
+    type: drug_drug
+    severity: avoid
+    reason: >-
+      Both can affect the heart's electrical rhythm, and together the risk is
+      higher. This combination is generally avoided.
+    source_url: https://medlineplus.gov/druginfo/meds/a614031.html
+
+  - subject: domperidone
+    object: heart disease
+    type: drug_condition
+    severity: avoid
+    reason: >-
+      Domperidone is not recommended for people with an existing heart rhythm
+      or heart muscle problem.
+    source_url: https://medlineplus.gov/druginfo/meds/a614031.html
+
+  # --- cotrimoxazole ---------------------------------------------------------
+  - subject: cotrimoxazole
+    object: metformin
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Cotrimoxazole can raise metformin levels and lower blood sugar. Worth
+      monitoring during the course.
+    source_url: https://medlineplus.gov/druginfo/meds/a684026.html
+
+  - subject: cotrimoxazole
+    object: kidney disease
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Cotrimoxazole is cleared by the kidneys and can raise potassium, so
+      reduced kidney function needs a dose review.
+    source_url: https://medlineplus.gov/druginfo/meds/a684026.html
+
+  - subject: cotrimoxazole
+    object: glibenclamide
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Cotrimoxazole can increase the blood-sugar-lowering effect of a
+      sulfonylurea.
+    source_url: https://medlineplus.gov/druginfo/meds/a684026.html
+
+  # --- antihistamines --------------------------------------------------------
+  - subject: cetirizine
+    object: alcohol use
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Cetirizine can cause drowsiness and alcohol adds to it. Take care with
+      driving or machinery.
+    source_url: https://medlineplus.gov/druginfo/meds/a698026.html
+
+  - subject: levocetirizine
+    object: alcohol use
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Levocetirizine can cause drowsiness and alcohol adds to it.
+    source_url: https://medlineplus.gov/druginfo/meds/a612046.html
+
+  - subject: cetirizine
+    object: kidney disease
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Cetirizine is cleared by the kidneys, so the dose is usually reduced when
+      kidney function is low.
+    source_url: https://medlineplus.gov/druginfo/meds/a698026.html
+
+  # --- acid suppression ------------------------------------------------------
+  - subject: rabeprazole
+    object: clopidogrel
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Some acid-suppressing medicines can reduce how well clopidogrel works.
+      Your doctor may prefer a different one.
+    source_url: https://medlineplus.gov/druginfo/meds/a699060.html
+
+  - subject: ranitidine
+    object: kidney disease
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Ranitidine is cleared by the kidneys and the dose is usually reduced when
+      kidney function is low.
+    source_url: https://medlineplus.gov/druginfo/meds/a601106.html
+
+  - subject: rabeprazole
+    object: liver disease
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Acid-suppressing medicines are processed by the liver, so liver disease
+      may call for a lower dose.
+    source_url: https://medlineplus.gov/druginfo/meds/a699060.html
+
+  # --- montelukast -----------------------------------------------------------
+  - subject: montelukast
+    object: depression
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Montelukast has been linked to mood and sleep changes. Anyone with a
+      history of mental health problems should be monitored, and any change
+      reported to a doctor.
+    source_url: https://medlineplus.gov/druginfo/meds/a600014.html
+
+  # --- dextromethorphan ------------------------------------------------------
+  - subject: dextromethorphan
+    object: alcohol use
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Dextromethorphan with alcohol increases drowsiness and confusion.
+    source_url: https://medlineplus.gov/druginfo/meds/a682492.html
+
+  - subject: dextromethorphan
+    object: liver disease
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Dextromethorphan is processed by the liver, so liver disease may mean it
+      lasts longer than expected.
+    source_url: https://medlineplus.gov/druginfo/meds/a682492.html
+
+  # --- beta-lactams ----------------------------------------------------------
+  # The allergy path is handled by class cross-reactivity; these are the
+  # non-allergy cautions that had no coverage at all.
+  - subject: amoxicillin
+    object: kidney disease
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Amoxicillin is cleared by the kidneys, so reduced kidney function usually
+      means a lower dose or longer gaps between doses.
+    source_url: https://medlineplus.gov/druginfo/meds/a685001.html
+
+  - subject: amoxicillin+clavulanate
+    object: liver disease
+    type: drug_condition
+    severity: caution
+    reason: >-
+      The clavulanate part has been associated with liver upset, so existing
+      liver disease deserves a mention to your doctor.
+    source_url: https://medlineplus.gov/druginfo/meds/a685024.html
+
+  - subject: cefixime
+    object: kidney disease
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Cefixime is cleared by the kidneys and the dose is usually adjusted when
+      kidney function is reduced.
+    source_url: https://medlineplus.gov/druginfo/meds/a698023.html
+
+  - subject: cefuroxime
+    object: kidney disease
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Cefuroxime is cleared by the kidneys and may need a dose adjustment.
+    source_url: https://medlineplus.gov/druginfo/meds/a601206.html
+
+  # --- antimalarial ----------------------------------------------------------
+  - subject: artemether+lumefantrine
+    object: heart disease
+    type: drug_condition
+    severity: caution
+    reason: >-
+      This antimalarial can affect the heart's electrical rhythm, so an
+      existing heart rhythm problem should be flagged to the prescriber.
+    source_url: https://www.who.int/teams/global-malaria-programme
+    source_name: WHO - Malaria treatment
+
+  - subject: artemether+lumefantrine
+    object: clarithromycin
+    type: drug_drug
+    severity: caution
+    reason: >-
+      Both can affect the heart's electrical rhythm, so the combination needs
+      medical supervision.
+    source_url: https://www.who.int/teams/global-malaria-programme
+    source_name: WHO - Malaria treatment
+
+  # --- smoking ---------------------------------------------------------------
+  - subject: amlodipine
+    object: smoking
+    type: drug_condition
+    severity: caution
+    reason: >-
+      Smoking works against blood-pressure treatment and adds its own
+      cardiovascular risk on top. Worth raising at your next review.
+    source_url: https://www.nhs.uk/conditions/high-blood-pressure-hypertension/
+    source_name: NHS - High blood pressure

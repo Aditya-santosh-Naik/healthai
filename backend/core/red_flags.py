@@ -33,10 +33,21 @@ def check(symptoms: list[ExtractedSymptom]) -> Escalation | None:
 
     Only positively-reported symptoms can trigger a flag. A denied symptom is
     evidence of absence and must never escalate.
+
+    Implication closure is applied HERE rather than relied on from the caller.
+    The meningitis rule is `all_of: [fever, stiff_neck]`, so a patient reporting
+    "high fever and a stiff neck" only matches once `high_fever` has been
+    expanded to also assert `fever`. Extraction does that today, which meant
+    the rule worked through the pipeline and silently failed for any other
+    caller -- a test, the PDF path, or whatever gets added next. A safety check
+    that depends on the caller having preprocessed correctly is a safety check
+    waiting to be bypassed, so it now closes over its own input. Idempotent:
+    running it on already-expanded symptoms changes nothing.
     """
     present = {s.code for s in symptoms if s.present is True}
     if not present:
         return None
+    present |= knowledge.expand_implied(present)
 
     for flag in knowledge.red_flags():
         triggered: list[str] = []

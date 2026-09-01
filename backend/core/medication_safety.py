@@ -206,6 +206,20 @@ def _check_drug_allergy(
     return findings
 
 
+# Lifestyle factors arrive through the same channel as conditions, because
+# they match the same rules -- but they are not conditions and must not read
+# as a diagnosis. "You take Metrogyl and have alcohol use" is both ungrammatical
+# and wrong about the patient.
+_LIFESTYLE_PHRASING = {
+    "alcohol use": "drink alcohol",
+    "smoking": "smoke",
+}
+
+
+def _phrase_for(matched: str) -> str:
+    return _LIFESTYLE_PHRASING.get(matched.strip().lower(), f"have {matched}")
+
+
 def _check_drug_condition(
     medicines: list[PatientMedicine], conditions: list[str]
 ) -> list[SafetyFinding]:
@@ -234,7 +248,7 @@ def _check_drug_condition(
                     related=matched_condition,
                     severity=rule.severity,
                     reason=(
-                        f"You take {medicine.label} and have {matched_condition}. "
+                        f"You take {medicine.label} and {_phrase_for(matched_condition)}. "
                         f"{rule.reason} Do not change anything on your own -- "
                         "discuss it with your doctor or pharmacist."
                     ),

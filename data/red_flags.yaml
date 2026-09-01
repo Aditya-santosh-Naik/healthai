@@ -165,6 +165,204 @@ red_flags:
 # them (blue lips, seizures, fainting, one-sided weakness, vision loss). Asking
 # about those burns the five-question budget and alarms people for no gain.
 # They still escalate instantly if the patient reports them.
+  # --- sepsis -------------------------------------------------------------
+  # Absent entirely before this. Sepsis kills faster than almost anything else
+  # in this knowledge base and presents as "fever plus something wrong", which
+  # is exactly the picture a symptom-checker is tempted to call ordinary flu.
+  - code: sepsis_fever_confusion
+    urgency: emergency
+    all_of: [high_fever, confusion]
+    message: >-
+      A high fever together with confusion or unusual drowsiness can be a sign
+      of sepsis, where an infection starts to affect the whole body. This gets
+      worse quickly.
+    action: Go to an emergency department now, or call emergency services.
+    source_name: NHS - Sepsis
+    source_url: https://www.nhs.uk/conditions/sepsis/
+
+  - code: sepsis_fever_rapid_breathing
+    urgency: emergency
+    all_of: [fever, rapid_breathing]
+    message: >-
+      Breathing much faster than usual alongside a fever can be an early sign
+      of sepsis. Fast breathing often changes before a person feels seriously
+      unwell.
+    action: Seek emergency assessment now. Do not wait to see whether it settles.
+    source_name: NHS - Sepsis
+    source_url: https://www.nhs.uk/conditions/sepsis/
+
+  - code: sepsis_poor_perfusion
+    urgency: emergency
+    all_of: [fever, cold_hands_feet]
+    message: >-
+      Cold or mottled hands and feet during a fever can mean circulation is
+      being affected, which is a warning sign of severe infection.
+    action: Seek emergency assessment now.
+    source_name: NHS - Sepsis
+    source_url: https://www.nhs.uk/conditions/sepsis/
+
+  - code: sepsis_low_urine_output
+    urgency: emergency
+    all_of: [fever, low_urine_output]
+    message: >-
+      Passing much less urine than usual while feverish can mean the infection
+      is affecting your kidneys or your blood pressure.
+    action: Seek emergency assessment now.
+    source_name: NHS - Sepsis
+    source_url: https://www.nhs.uk/conditions/sepsis/
+
+  # --- anaphylaxis --------------------------------------------------------
+  # Also absent before this. Minutes matter, and the pipeline must not spend
+  # them asking follow-up questions about a cough.
+  - code: anaphylaxis_breathing
+    urgency: emergency
+    all_of: [rash, shortness_of_breath]
+    message: >-
+      A rash together with difficulty breathing can be a severe allergic
+      reaction, which can worsen within minutes.
+    action: >-
+      Call emergency services now. If you have been prescribed an adrenaline
+      auto-injector, use it as you were shown.
+    source_name: NHS - Anaphylaxis
+    source_url: https://www.nhs.uk/conditions/anaphylaxis/
+
+  - code: anaphylaxis_airway
+    urgency: emergency
+    all_of: [itching, unable_to_speak_sentences]
+    message: >-
+      Itching or a rash with difficulty speaking can mean the airway is
+      swelling. This is a medical emergency.
+    action: Call emergency services now.
+    source_name: NHS - Anaphylaxis
+    source_url: https://www.nhs.uk/conditions/anaphylaxis/
+
+  # --- respiratory --------------------------------------------------------
+  - code: cyanosis
+    urgency: emergency
+    any_of: [blue_lips]
+    message: >-
+      Blue or grey lips, tongue or face means the blood is not carrying enough
+      oxygen.
+    action: Call emergency services immediately.
+    source_name: NHS - Shortness of breath
+    source_url: https://www.nhs.uk/conditions/shortness-of-breath/
+
+  - code: cannot_complete_sentences
+    urgency: emergency
+    any_of: [unable_to_speak_sentences]
+    message: >-
+      Being too breathless to finish a sentence is a sign that breathing is
+      severely affected.
+    action: Call emergency services immediately.
+    source_name: NHS - Shortness of breath
+    source_url: https://www.nhs.uk/conditions/shortness-of-breath/
+
+  - code: breathless_at_rest
+    urgency: emergency
+    any_of: [breathlessness_at_rest]
+    message: >-
+      Breathlessness while sitting still, with no exertion, needs urgent
+      assessment.
+    action: Seek emergency care now.
+    source_name: NHS - Shortness of breath
+    source_url: https://www.nhs.uk/conditions/shortness-of-breath/
+
+  # --- neurological -------------------------------------------------------
+  - code: seizure
+    urgency: emergency
+    any_of: [seizures]
+    message: >-
+      A fit or seizure needs emergency assessment, particularly a first one or
+      one that happens with a fever.
+    action: Call emergency services now.
+    source_name: NHS - Epilepsy and seizures
+    source_url: https://www.nhs.uk/conditions/epilepsy/
+
+  - code: sudden_vision_loss
+    urgency: emergency
+    any_of: [vision_loss]
+    message: >-
+      Sudden loss or blurring of vision can indicate a stroke, or an eye
+      problem that has to be treated within hours to save sight.
+    action: Go to an emergency department now.
+    source_name: NHS - Stroke
+    source_url: https://www.nhs.uk/conditions/stroke/
+
+  - code: thunderclap_headache
+    urgency: emergency
+    all_of: [severe_headache, vomiting]
+    message: >-
+      A very severe headache with vomiting, especially one that came on
+      suddenly, needs urgent assessment to rule out bleeding around the brain.
+    action: Go to an emergency department now.
+    source_name: NHS - Subarachnoid haemorrhage
+    source_url: https://www.nhs.uk/conditions/subarachnoid-haemorrhage/
+
+  - code: fainting_episode
+    urgency: urgent
+    any_of: [fainting]
+    message: >-
+      Fainting or passing out needs assessment, particularly alongside chest
+      pain, palpitations or breathlessness.
+    action: >-
+      Contact a doctor today, and go to an emergency department if it happens
+      again.
+    source_name: NHS - Fainting
+    source_url: https://www.nhs.uk/conditions/fainting/
+
+  # --- cardiac ------------------------------------------------------------
+  - code: palpitations_with_fainting
+    urgency: emergency
+    all_of: [palpitations, fainting]
+    message: >-
+      A racing or irregular heartbeat with fainting can mean the heart is not
+      pumping effectively.
+    action: Call emergency services now.
+    source_name: NHS - Heart palpitations
+    source_url: https://www.nhs.uk/conditions/heart-palpitations/
+
+  - code: atypical_cardiac_presentation
+    urgency: emergency
+    all_of: [jaw_pain, shortness_of_breath]
+    message: >-
+      Jaw or arm discomfort with breathlessness can be a heart attack that is
+      presenting without classic chest pain. This is more common in women and
+      in people with diabetes.
+    action: Call emergency services now.
+    source_name: NHS - Heart attack
+    source_url: https://www.nhs.uk/conditions/heart-attack/
+
+  # --- gastrointestinal ---------------------------------------------------
+  - code: black_stools_flag
+    urgency: emergency
+    any_of: [black_stools]
+    message: >-
+      Black, tarry stools usually mean bleeding higher up in the digestive
+      tract, even when you feel otherwise well.
+    action: Go to an emergency department now.
+    source_name: NHS - Rectal bleeding
+    source_url: https://www.nhs.uk/conditions/rectal-bleeding/
+
+  - code: vomiting_blood_flag
+    urgency: emergency
+    any_of: [blood_in_vomit]
+    message: >-
+      Vomiting blood, or material that looks like coffee grounds, is a sign of
+      bleeding in the stomach or gullet.
+    action: Call emergency services or go to an emergency department now.
+    source_name: NHS - Vomiting blood
+    source_url: https://www.nhs.uk/conditions/vomiting-blood-haematemesis/
+
+  - code: peritonitis_signs
+    urgency: emergency
+    all_of: [severe_abdominal_pain, abdominal_tenderness]
+    message: >-
+      Severe abdominal pain with a tender, rigid abdomen can indicate a
+      surgical emergency such as a perforation or appendicitis.
+    action: Go to an emergency department now, and do not eat or drink on the way.
+    source_name: MedlinePlus - Peritonitis
+    source_url: https://medlineplus.gov/ency/article/001335.htm
+
 screening_questions:
   - shortness_of_breath
   - chest_pain

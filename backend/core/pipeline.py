@@ -319,7 +319,10 @@ def run(
     shown = top_candidates(all_candidates)
     present_codes = {s.code for s in symptoms if s.present is True}
     safety = medication_safety.evaluate(
-        facts.medications, facts.allergies, facts.conditions, present_codes
+        # safety_conditions, not conditions: alcohol and smoking are booleans
+        # on the profile, so drug-condition rules written against them were
+        # unreachable. See ProfileFacts.safety_conditions.
+        facts.medications, facts.allergies, facts.safety_conditions, present_codes
     )
 
     # --- medication guidance (three tiers, no prescribing) ------------------

@@ -208,7 +208,7 @@ built:
 .venv\Scripts\python.exe -m pytest tests -q
 ```
 
-234 tests should pass.
+295 tests should pass.
 
 ---
 

@@ -31,6 +31,28 @@ class ProfileFacts:
     medications: list[dict[str, str | None]] = field(default_factory=list)
 
     @property
+    def safety_conditions(self) -> list[str]:
+        """Conditions plus lifestyle factors, for the drug-condition check.
+
+        Alcohol and smoking are booleans on the profile rather than entries in
+        the condition list, so a rule written against them could never fire --
+        `metronidazole` with alcohol causes a well-known and unpleasant
+        reaction, and there was no way to express it. Surfacing them as
+        pseudo-conditions makes those rules reachable without a second matching
+        mechanism.
+
+        Named distinctly from `conditions` on purpose: this list is for
+        matching, not for display. Telling a patient their diagnosis was
+        influenced by the "condition" of drinking would be wrong.
+        """
+        extra = []
+        if self.alcohol:
+            extra.append("alcohol use")
+        if self.smoker:
+            extra.append("smoking")
+        return [*self.conditions, *extra]
+
+    @property
     def medicine_labels(self) -> list[str]:
         return [
             (m.get("brand_name") or m.get("generic_name") or "").strip()
