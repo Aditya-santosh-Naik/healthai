@@ -341,6 +341,53 @@ matter of trust.
 
 ---
 
+## 10a. Where the time goes
+
+Profiled per stage rather than reasoned about, because the answer was not the
+one the code shape suggests. One consultation, deterministic path only:
+
+| Stage | Before | After |
+|---|---|---|
+| RAG retrieval | 41.60 ms | **0.03 ms** |
+| Symptom extraction | 4.99 ms | **1.03 ms** |
+| Scope guard | 0.13 ms | 0.13 ms |
+| Evidence engine | 0.09 ms | 0.10 ms |
+| Medication safety | 0.08 ms | 0.08 ms |
+| Diet / lifestyle | 0.07 ms | 0.02 ms |
+| Follow-up, red flags, sufficiency | <0.02 ms each | unchanged |
+| **Total** | **46.99 ms** | **1.42 ms** |
+
+Two changes, both aimed at the measured hot spots:
+
+**The query embedding is memoised.** 35.9 of retrieval's 41.6 ms was a single
+`embed_query` call -- a transformer forward pass -- against 0.016 ms for the
+mask rebuild and 0.006 ms for the similarity matmul. Caching is sound here
+specifically because retrieval is filtered by candidate CODES and never runs on
+user text: the query is condition display names plus a fixed suffix, bounded at
+roughly 2,400 permutations, so it cannot leak between patients or be poisoned
+by input.
+
+**Alias matching is bucketed by first word.** `_match_clause` tested all 789
+aliases against every clause, ~3,900 regex scans per message. An alias cannot
+match a clause that does not contain its first word, so the filter is exact
+rather than heuristic. O(clauses x aliases x length) becomes
+O(clauses x matching-aliases x length).
+
+What was deliberately NOT optimised, because the profile said not to: the
+`np.argsort` over 120 chunks (0.012 ms) and the mask rebuild (0.016 ms). Both
+have textbook improvements available -- `argpartition` is O(n) against
+`argsort`'s O(n log n) -- and at this scale both would be theatre.
+
+The honest caveat: **none of this is felt by a user.** End to end the request is
+dominated by the single Ollama call at 8-24 s, which is unchanged. At the API
+level the deterministic pipeline is now 1.4 ms of a 21 ms request, the rest
+being database writes and serialisation. This work matters for the
+Ollama-down fallback path and for throughput under load, not for perceived
+latency, and presenting a 33x speedup as a user-visible win would be
+misleading.
+
+---
+
 ## 11. Known weaknesses
 
 Honest ones, worth raising before an examiner does:
