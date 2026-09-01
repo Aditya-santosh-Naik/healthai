@@ -1,4 +1,15 @@
-"""End-to-end against the LIVE server. Follows spec section 18's demo script."""
+"""End-to-end against a LIVE, running server. Follows the spec's demo script.
+
+The pytest suite runs against an in-memory database with the LLM stubbed out.
+That is the right default -- fast and deterministic -- but it means the things
+it cannot see are exactly the things that break a demo: a real Ollama call, a
+real SQLite file, PDF bytes over HTTP, and the app actually being served.
+
+All three bugs this found were invisible to pytest for that reason.
+
+Start the backend, then from the backend directory:
+    .venv/Scripts/python.exe -m tools.e2e_live
+"""
 import json, sys, time
 import httpx
 
