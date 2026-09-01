@@ -47,8 +47,18 @@ MIN_TOKEN_LENGTH = 4
 # Frequent English words that sit close to a symptom term. Correcting any of
 # these silently converts ordinary prose into a clinical claim, and "never"
 # and "not" would turn a denial into a report.
+#
+# The negation carriers on the first line are the load-bearing ones. "cannot"
+# is not in the medical vocabulary but "cant" is -- it arrives through aliases
+# like "cant breathe" -- so repair rewrote "cannot sleep" to "cant sleep",
+# which then matched no alias AND lost the negation. Any word that carries a
+# negation must be inert here: mangling one can turn "cannot breathe" into
+# something the negation scanner no longer recognises, and a denial read as a
+# report is the worst output this module can produce.
 PROTECTED = frozenset(
     """
+    cannot cant wont dont didnt doesnt havent hasnt hadnt isnt arent
+    wasnt werent couldnt shouldnt wouldnt aint nor neither none
     never ever every over other under after before around here there where
     when what which while whole worse worst felt feel feels fell full fall
     call tall wall well will well since start started stop stopped

@@ -493,6 +493,93 @@ symptoms:
 #
 # Implications are applied only to POSITIVE findings. Denying "high fever" does
 # not deny fever.
+
+  # --- urinary --------------------------------------------------------------
+  # No condition in the closed set of fourteen is urinary, so these score
+  # nothing. They are here because the alternative is worse: a patient typing
+  # "burning when I pee" currently has it dropped silently, and the "what to
+  # tell your doctor" summary -- the output the spec calls the most useful in
+  # the product -- omits the one symptom that would have pointed a real
+  # clinician at a urinary infection.
+  burning_urination:
+    display: Burning when passing urine
+    aliases: [burning urination, burning when passing urine, burning while peeing,
+              burning when i pee, burning when peeing, pain passing urine,
+              painful urination, pain while urinating, jalan peshab, peshab me jalan,
+              stinging when i pee, burns when i pee]
+  frequent_urination:
+    display: Passing urine more often
+    aliases: [frequent urination, passing urine often, peeing often, going often,
+              urinating frequently, need to pee all the time, bar bar peshab]
+  # --- musculoskeletal ------------------------------------------------------
+  back_pain:
+    display: Back pain
+    aliases: [back pain, backache, back ache, lower back pain, pain in back,
+              kamar dard, back paining, bakcache]
+  neck_pain:
+    display: Neck pain
+    aliases: [neck pain, neck ache, pain in neck, gardan dard, neck paining]
+  muscle_cramps:
+    display: Muscle cramps
+    aliases: [muscle cramps, cramps in legs, leg cramps, muscle cramp,
+              cramping muscles, ainthan]
+  # --- eyes, mouth, sleep ---------------------------------------------------
+  red_eyes:
+    display: Red or sore eyes
+    aliases: [red eyes, sore eyes, eye redness, red eye, burning eyes,
+              itchy eyes, aankh lal]
+  blurred_vision:
+    display: Blurred vision
+    aliases: [blurred vision, blurry vision, vision blurred, cannot see clearly,
+              hazy vision, dhundla dikhna]
+  mouth_ulcers:
+    display: Mouth ulcers
+    aliases: [mouth ulcers, mouth ulcer, ulcers in mouth, sores in mouth,
+              muh ke chale, mouth sores]
+  dry_mouth:
+    display: Dry mouth
+    # 'dry mouth' itself stays with `dehydration`, which conditions score on.
+    aliases: [mouth feels dry, mouth dryness, muh sukha]
+  excessive_thirst:
+    display: Excessive thirst
+    # 'excessive thirst' and 'very thirsty' stay with `dehydration`.
+    aliases: [extremely thirsty, always thirsty,
+              feeling thirsty all the time, bahut pyaas]
+  insomnia:
+    display: Trouble sleeping
+    aliases: [insomnia, cannot sleep, unable to sleep, trouble sleeping,
+              not sleeping, no sleep, sleepless, neend nahi aa rahi, neend nahi]
+  # --- ENT ------------------------------------------------------------------
+  ear_discharge:
+    display: Discharge from the ear
+    aliases: [ear discharge, discharge from ear, fluid from ear, pus from ear,
+              kaan se pani]
+  bad_breath:
+    display: Bad breath
+    aliases: [bad breath, foul breath, mouth smell, halitosis]
+  # --- general --------------------------------------------------------------
+  swollen_ankles:
+    display: Swollen ankles or feet
+    aliases: [swollen ankles, swollen feet, swelling in legs, swollen legs,
+              ankle swelling, pairo me sujan, feet swelling]
+  numbness:
+    display: Numbness
+    aliases: [numbness, numb, feeling numb, no sensation, sunn]
+  tingling:
+    display: Tingling or pins and needles
+    aliases: [tingling, pins and needles, jhunjhuni, prickling feeling]
+  tremor:
+    display: Shaking or tremor
+    aliases: [tremor, shaking hands, hands shaking, trembling, kaanpna]
+  hair_loss:
+    display: Hair loss
+    aliases: [hair loss, hair fall, losing hair, baal jhadna, hairfall]
+  chills_at_night:
+    display: Chills at night
+    aliases: [chills at night, night chills, shivering at night, cold at night]
+  reduced_appetite_children:
+    display: Not eating properly
+    aliases: [not eating properly, not eating well, refusing food, khana nahi kha raha]
 implications:
   high_fever: [fever]
   low_grade_fever: [fever]

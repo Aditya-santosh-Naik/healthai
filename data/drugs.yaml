@@ -23,7 +23,10 @@ drugs:
 
   - generic: ibuprofen
     display: Ibuprofen
-    brands: [Brufen, Ibugesic, Advil, Combiflam]
+    # Combiflam is deliberately NOT here: it is ibuprofen+paracetamol and
+    # belongs to that entry. Listed twice, resolution is order-dependent
+    # and the paracetamol component can be silently lost.
+    brands: [Brufen, Ibugesic, Advil]
     drug_class: nsaid
     otc: true
     side_effects: [upper_abdominal_pain, nausea, heartburn, indigestion, bloating, black_stools, dizziness]
@@ -457,3 +460,56 @@ drugs:
     otc: true
     side_effects: [constipation, bloating, nausea]
     source_url: https://medlineplus.gov/druginfo/meds/a601032.html
+
+  # --- additions: common in Indian pharmacies, previously unresolvable ------
+  # A brand the resolver does not know is reported back as "unrecognised", so
+  # every safety check silently skips it. These are all high-frequency.
+  - generic: sitagliptin
+    display: Sitagliptin
+    brands: [Januvia, Istavel, Sitazit, Zituvia]
+    drug_class: dpp4_inhibitor
+    otc: false
+    side_effects: [headache, nausea, abdominal_pain, sore_throat, runny_nose]
+    source_url: https://medlineplus.gov/druginfo/meds/a606023.html
+
+  - generic: cefpodoxime
+    display: Cefpodoxime
+    brands: [Cefpo, Monocef-O, Doxcef, Zifi-CV]
+    drug_class: cephalosporin
+    otc: false
+    side_effects: [diarrhoea, nausea, abdominal_pain, rash]
+    source_url: https://medlineplus.gov/druginfo/meds/a692019.html
+
+  - generic: ambroxol
+    display: Ambroxol
+    brands: [Ambrodil, Mucolite, Ambrolite, Lupihist]
+    drug_class: mucolytic
+    otc: true
+    side_effects: [nausea, abdominal_pain, dry_mouth, diarrhoea]
+    source_url: https://medlineplus.gov/druginfo/meds/a682494.html
+
+  - generic: chlorpheniramine
+    display: Chlorpheniramine
+    brands: [Piriton, CPM, Cofdex, Avil]
+    drug_class: antihistamine_sedating
+    otc: true
+    side_effects: [fatigue, dizziness, dry_mouth, blurred_vision, constipation]
+    source_url: https://medlineplus.gov/druginfo/meds/a682543.html
+
+  - generic: dicyclomine
+    display: Dicyclomine
+    # Cyclopam and Meftal-Spas are combinations that are not modelled here;
+    # assigning them to one component would silently drop the other.
+    brands: [Colimex, Spasmindon]
+    drug_class: antispasmodic
+    otc: false
+    side_effects: [dry_mouth, dizziness, blurred_vision, constipation, nausea]
+    source_url: https://medlineplus.gov/druginfo/meds/a684007.html
+
+  - generic: mefenamic_acid
+    display: Mefenamic acid
+    brands: [Meftal, Ponstan, Mefkind]
+    drug_class: nsaid
+    otc: false
+    side_effects: [abdominal_pain, nausea, diarrhoea, indigestion, heartburn]
+    source_url: https://medlineplus.gov/druginfo/meds/a681028.html

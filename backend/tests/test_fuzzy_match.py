@@ -57,6 +57,30 @@ def test_common_words_are_never_rewritten(word):
     assert fuzzy_match.repair(word) == word
 
 
+@pytest.mark.parametrize(
+    "word",
+    ["cannot", "wont", "dont", "didnt", "doesnt", "havent", "couldnt", "isnt"],
+)
+def test_negation_carriers_are_never_rewritten(word):
+    """Regression: "cannot" was rewritten to "cant".
+
+    "cannot" is absent from the medical vocabulary but "cant" is present,
+    arriving through aliases like "cant breathe". Repair therefore rewrote
+    "cannot sleep" into "cant sleep", which matched no alias at all. Cases
+    where the mangled form happened to be an alias -- "cannot breathe" --
+    survived by luck, which is why it went unnoticed. Mangling a negation
+    carrier can also hide a denial from the negation scanner, and a denial read
+    as a report is the worst output this module can produce.
+    """
+    assert fuzzy_match.repair(word) == word
+
+
+def test_cannot_phrases_still_reach_their_symptom():
+    assert "insomnia" in codes("cannot sleep at all")
+    assert "shortness_of_breath" in codes("i cannot breathe properly")
+    assert "loss_of_smell" in codes("cannot smell anything")
+
+
 def test_a_denial_is_not_turned_into_a_symptom():
     """`never` sits the same edit distance from `fever` as `fewer` does.
 
